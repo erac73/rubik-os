@@ -1,0 +1,21 @@
+[Unit]
+Description=Rubik OS Cell Orchestrator
+Documentation=https://rubik-os.org/docs
+Before=sysinit.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/rubik/orchestrator/rubikd bootstrap
+ExecStop=/usr/lib/rubik/orchestrator/rubikd shutdown
+RemainAfterExit=yes
+
+# Minimal footprint
+MemoryMax=32M
+CPUAccounting=yes
+MemoryAccounting=yes
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,40 @@
+# ───────────────────────────────────────────────
+# Rubik OS — Package selection for ISO
+# Minimal set: only what's needed to boot and install
+# ───────────────────────────────────────────────
+
+# ── Base system ────────────────────────────────
+base
+base-devel
+linux-lts
+linux-firmware
+
+# ── Bootloader ─────────────────────────────────
+grub
+efibootmgr
+
+# ── Filesystem ─────────────────────────────────
+btrfs-progs
+dosfstools
+e2fsprogs
+exfat-utils
+f2fs-tools
+
+# ── Network ────────────────────────────────────
+networkmanager
+iwd
+nftables
+chrony
+
+# ── System tools ───────────────────────────────
+sudo
+git
+vim
+man-db
+man-pages
+
+# ── Compression (ZRAM) ─────────────────────────
+zram-generator
+
+# ── Rubik OS packages ──────────────────────────
+rubik-core

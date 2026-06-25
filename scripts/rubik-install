@@ -1,0 +1,242 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubik-install — Rubik OS Installer
+# Interactive installer for Rubik OS
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; BOLD='\e[1m'; NC='\e[0m'
+
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+header(){ echo -e "\n${CYAN}══ $1 ══${NC}\n"; }
+
+# ── Detect Hardware ────────────────────────────
+detect_hardware() {
+    header "Hardware Detection"
+
+    local ram_kb
+    ram_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo)
+    local ram_mb=$((ram_kb / 1024))
+
+    local cpu_cores
+    cpu_cores=$(nproc)
+
+    local disk_size=""
+    local disk_rotational=""
+
+    # Find the main disk
+    local main_disk=""
+    for disk in /sys/block/sd? /sys/block/nvme?n? /sys/block/vd?; do
+        if [[ -e "$disk" ]]; then
+            main_disk=$(basename "$disk")
+            disk_size=$(cat "/sys/block/$main_disk/size" 2>/dev/null || echo 0)
+            disk_size=$((disk_size * 512 / 1024 / 1024 / 1024))  # Convert to GB
+            if [[ -f "/sys/block/$main_disk/queue/rotational" ]]; then
+                disk_rotational=$(cat "/sys/block/$main_disk/queue/rotational")
+            fi
+            break
+        fi
+    done
+
+    local disk_type="HDD"
+    [[ "$disk_rotational" == "0" ]] && disk_type="SSD"
+
+    echo "  RAM:      ${ram_mb} MB"
+    echo "  CPU:      ${cpu_cores} cores"
+    echo "  Disk:     ${main_disk} — ${disk_size}GB (${disk_type})"
+    echo ""
+}
+
+# ── Partition Disk ─────────────────────────────
+partition_disk() {
+    header "Disk Partitioning"
+
+    echo "  Available disks:"
+    lsblk -d -o NAME,SIZE,TYPE,MOUNTPOINT | grep -v loop
+    echo ""
+
+    read -rp "  Install to (e.g., /dev/sda): " disk_dev
+    if [[ ! -b "$disk_dev" ]]; then
+        error "Not a block device: $disk_dev"
+        return 1
+    fi
+
+    warn "This will ERASE ALL DATA on $disk_dev"
+    read -rp "  Continue? (yes/no): " confirm
+    [[ "$confirm" != "yes" ]] && { error "Aborted"; return 1; }
+
+    log "Partitioning $disk_dev..."
+
+    # Create partition table (GPT)
+    parted -s "$disk_dev" mklabel gpt
+
+    # EFI partition (512MB)
+    parted -s "$disk_dev" mkpart primary fat32 1MiB 513MiB
+    parted -s "$disk_dev" set 1 esp on
+
+    # Boot partition (1GB)
+    parted -s "$disk_dev" mkpart primary ext4 513MiB 1537MiB
+
+    # Root partition (remaining)
+    parted -s "$disk_dev" mkpart primary btrfs 1537MiB 100%
+
+    log "Partitioning complete"
+}
+
+# ── Format Filesystems ─────────────────────────
+format_filesystems() {
+    header "Formatting Filesystems"
+
+    local efi_part="${disk_dev}1"
+    local boot_part="${disk_dev}2"
+    local root_part="${disk_dev}3"
+
+    log "Formatting EFI partition ($efi_part)..."
+    mkfs.fat -F32 "$efi_part"
+
+    log "Formatting boot partition ($boot_part)..."
+    mkfs.ext4 -F "$boot_part"
+
+    log "Formatting root partition ($root_part) with LUKS..."
+    cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 "$root_part"
+    cryptsetup open "$root_part" rubik-root
+
+    log "Creating Btrfs filesystem..."
+    mkfs.btrfs -f -L rubik-root /dev/mapper/rubik-root
+
+    log "Formatting complete"
+}
+
+# ── Create Btrfs Subvolumes ────────────────────
+create_subvolumes() {
+    header "Creating Btrfs Subvolumes"
+
+    mount /dev/mapper/rubik-root /mnt
+
+    btrfs subvolume create /mnt/@
+    btrfs subvolume create /mnt/@home
+    btrfs subvolume create /mnt/@log
+    btrfs subvolume create /mnt/@cache
+    btrfs subvolume create /mnt/@snapshots
+
+    umount /mnt
+
+    log "Subvolumes created"
+}
+
+# ── Mount Partitions ───────────────────────────
+mount_partitions() {
+    header "Mounting Partitions"
+
+    local efi_part="${disk_dev}1"
+    local boot_part="${disk_dev}2"
+
+    mount -o noatime,compress=zstd:3,space_cache=v2,subvol=@ /dev/mapper/rubik-root /mnt
+
+    mkdir -p /mnt/{boot,home,var/log,var/cache,.snapshots}
+    mkdir -p /mnt/boot/efi
+
+    mount "$boot_part" /mnt/boot
+    mount "$efi_part" /mnt/boot/efi
+    mount -o noatime,compress=zstd:3,subvol=@home /dev/mapper/rubik-root /mnt/home
+    mount -o noatime,compress=zstd:1,subvol=@log /dev/mapper/rubik-root /mnt/var/log
+    mount -o noatime,compress=zstd:1,subvol=@cache /dev/mapper/rubik-root /mnt/var/cache
+    mount -o subvol=@snapshots /dev/mapper/rubik-root /mnt/.snapshots
+
+    log "Partitions mounted"
+}
+
+# ── Install Base System ────────────────────────
+install_base() {
+    header "Installing Rubik OS Base"
+
+    # Install base packages
+    pacstrap -K /mnt base base-devel linux-lts linux-firmware \
+        grub efibootmgr btrfs-progs \
+        networkmanager iwd nftables chrony \
+        sudo git vim zram-generator
+
+    log "Base system installed"
+}
+
+# ── Configure System ───────────────────────────
+configure_system() {
+    header "Configuring System"
+
+    # Generate fstab
+    genfstab -U /mnt >> /mnt/etc/fstab
+
+    # Chroot and configure
+    arch-chroot /mnt /bin/bash << 'CHROOT'
+        # Timezone
+        ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+        hwclock --systohc
+
+        # Locale
+        echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+        locale-gen
+        echo "LANG=en_US.UTF-8" > /etc/locale.conf
+
+        # Hostname
+        echo "rubik" > /etc/hostname
+
+        # Root password
+        echo "Set root password:"
+        passwd
+
+        # Create user
+        read -rp "Username: " username
+        useradd -m -G wheel "$username"
+        passwd "$username"
+        echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
+
+        # Bootloader
+        grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=RubikOS
+        grub-mkconfig -o /boot/grub/grub.cfg
+
+        # Enable services
+        systemctl enable NetworkManager
+        systemctl enable iwd
+        systemctl enable nftables
+        systemctl enable chronyd
+        systemctl enable rubikd
+
+        # Copy Rubik OS configuration
+        cp -r /usr/share/rubik/* /etc/rubik/
+CHROOT
+
+    log "System configured"
+}
+
+# ── Main ───────────────────────────────────────
+main() {
+    cat << "EOF"
+╔═══════════════════════════════════════════╗
+║       Rubik OS Installer v0.1             ║
+║    Optimized. Decentralized. Efficient.   ║
+╚═══════════════════════════════════════════╝
+EOF
+
+    detect_hardware
+    partition_disk
+    format_filesystems
+    create_subvolumes
+    mount_partitions
+    install_base
+    configure_system
+
+    header "Installation Complete"
+    echo "  Rubik OS has been installed."
+    echo "  Reboot and remove the installation media."
+    echo ""
+
+    read -rp "  Reboot now? (yes/no): " reboot
+    if [[ "$reboot" == "yes" ]]; then
+        umount -R /mnt
+        reboot
+    fi
+}
+
+main "$@"

@@ -1,0 +1,404 @@
+# ───────────────────────────────────────────────
+# Rubik OS — Cell Definition File
+# Each cell is an atomic, composable component.
+# ───────────────────────────────────────────────
+
+[cell.F0.0]
+name = "kernel"
+type = "systemd"
+unit = "rubik-cell@kernel"
+critical = true
+order = 0
+
+[cell.F0.1]
+name = "memory-compression"
+type = "script"
+exec = "/usr/lib/rubik/cells/memory-compression.sh"
+depends = ["F0.0"]
+order = 1
+
+[cell.F0.2]
+name = "swap-manager"
+type = "sd-swap"
+unit = "systemd-swap"
+depends = ["F0.0"]
+order = 2
+
+[cell.F0.3]
+name = "oom-guard"
+type = "systemd"
+unit = "rubik-cell@oom-guard"
+depends = ["F0.0"]
+order = 3
+
+[cell.F0.4]
+name = "hugepages"
+type = "script"
+exec = "/usr/lib/rubik/cells/hugepages.sh"
+depends = ["F0.0"]
+order = 4
+
+[cell.F0.5]
+name = "cache-tune"
+type = "script"
+exec = "/usr/lib/rubik/cells/cache-tune.sh"
+depends = ["F0.0"]
+order = 5
+
+[cell.F0.6]
+name = "irq-balance"
+type = "systemd"
+unit = "irqbalance"
+depends = ["F0.0"]
+order = 6
+
+[cell.F0.7]
+name = "cpu-gov"
+type = "script"
+exec = "/usr/lib/rubik/cells/cpu-gov.sh"
+depends = ["F0.0"]
+order = 7
+
+[cell.F0.8]
+name = "mem-forecast"
+type = "systemd"
+unit = "rubik-cell@mem-forecast"
+depends = ["F0.0"]
+order = 8
+
+# ── Face 1 — Process & Services ─────────────────
+
+[cell.F1.0]
+name = "rubikd"
+type = "systemd"
+unit = "rubikd"
+critical = true
+depends = ["F0.0"]
+order = 0
+
+[cell.F1.1]
+name = "systemd-minimal"
+type = "systemd"
+unit = "systemd-journald"
+depends = ["F1.0"]
+order = 1
+
+[cell.F1.2]
+name = "cgroup-manager"
+type = "script"
+exec = "/usr/lib/rubik/cells/cgroup-manager.sh"
+depends = ["F1.0"]
+order = 2
+
+[cell.F1.3]
+name = "sched-tune"
+type = "script"
+exec = "/usr/lib/rubik/cells/sched-tune.sh"
+depends = ["F1.0"]
+order = 3
+
+[cell.F1.4]
+name = "service-watcher"
+type = "timer"
+unit = "rubik-cell@service-watcher"
+timer = "*-*-* *:*:00/15"
+depends = ["F1.1"]
+order = 4
+
+[cell.F1.5]
+name = "cron-minimal"
+type = "systemd"
+unit = "rubik-cell@cron-minimal"
+depends = ["F1.1"]
+order = 5
+
+[cell.F1.6]
+name = "log-forwarder"
+type = "systemd"
+unit = "systemd-journald"
+depends = ["F1.1"]
+order = 6
+
+[cell.F1.7]
+name = "initramfs"
+type = "oneshot"
+unit = "rubik-cell@initramfs"
+exec = "/usr/lib/rubik/cells/initramfs.sh"
+order = -1
+
+[cell.F1.8]
+name = "power-manager"
+type = "systemd"
+unit = "rubik-cell@power-manager"
+depends = ["F0.7"]
+order = 8
+
+# ── Face 2 — Storage ────────────────────────────
+
+[cell.F2.0]
+name = "fs-layout"
+type = "oneshot"
+unit = "rubik-cell@fs-layout"
+exec = "/usr/lib/rubik/cells/fs-layout.sh"
+depends = ["F0.0"]
+order = 0
+
+[cell.F2.1]
+name = "mount-manager"
+type = "systemd"
+unit = "systemd-udevd"
+depends = ["F2.0"]
+order = 1
+
+[cell.F2.2]
+name = "cache-io"
+type = "script"
+exec = "/usr/lib/rubik/cells/cache-io.sh"
+depends = ["F2.1"]
+order = 2
+
+[cell.F2.3]
+name = "tmpfs-manager"
+type = "systemd"
+unit = "tmpfs.mount"
+depends = ["F2.0"]
+order = 3
+
+[cell.F2.4]
+name = "trim-scheduler"
+type = "timer"
+unit = "fstrim"
+timer = "weekly"
+depends = ["F2.1"]
+order = 4
+
+[cell.F2.5]
+name = "dedup"
+type = "script"
+exec = "/usr/lib/rubik/cells/dedup.sh"
+depends = ["F2.1"]
+order = 5
+
+[cell.F2.6]
+name = "fs-notify"
+type = "systemd"
+unit = "systemd-udevd"
+depends = ["F2.1"]
+order = 6
+
+[cell.F2.7]
+name = "snapper"
+type = "systemd"
+unit = "rubik-cell@snapper"
+depends = ["F2.1"]
+optional = true
+order = 7
+
+[cell.F2.8]
+name = "defrag-lite"
+type = "timer"
+unit = "rubik-cell@defrag"
+timer = "monthly"
+depends = ["F2.1"]
+order = 8
+
+# ── Face 3 — Network ────────────────────────────
+
+[cell.F3.0]
+name = "networkd"
+type = "systemd"
+unit = "systemd-networkd"
+depends = ["F0.0"]
+order = 0
+
+[cell.F3.1]
+name = "firewall"
+type = "systemd"
+unit = "nftables"
+depends = ["F3.0"]
+order = 1
+
+[cell.F3.2]
+name = "dns-cache"
+type = "systemd"
+unit = "systemd-resolved"
+depends = ["F3.0"]
+order = 2
+
+[cell.F3.3]
+name = "routing"
+type = "systemd"
+unit = "systemd-networkd"
+depends = ["F3.0"]
+order = 3
+
+[cell.F3.4]
+name = "proxy-tun"
+type = "script"
+exec = "/usr/lib/rubik/cells/proxy-tun.sh"
+depends = ["F3.0"]
+optional = true
+order = 4
+
+[cell.F3.5]
+name = "net-monitor"
+type = "script"
+exec = "/usr/lib/rubik/cells/net-monitor.sh"
+depends = ["F3.0"]
+order = 5
+
+[cell.F3.6]
+name = "wifi-manager"
+type = "systemd"
+unit = "iwd"
+depends = ["F3.0"]
+order = 6
+
+[cell.F3.7]
+name = "bandwidth-limiter"
+type = "script"
+exec = "/usr/lib/rubik/cells/bandwidth-limiter.sh"
+depends = ["F3.1"]
+optional = true
+order = 7
+
+[cell.F3.8]
+name = "ntp-sync"
+type = "systemd"
+unit = "chronyd"
+depends = ["F3.0"]
+order = 8
+
+# ── Face 4 — UI ─────────────────────────────────
+
+[cell.F4.0]
+name = "wm-core"
+type = "script"
+exec = "/usr/lib/rubik/cells/wm-core.sh"
+depends = ["F0.0", "F3.0"]
+order = 0
+
+[cell.F4.1]
+name = "bar-status"
+type = "script"
+exec = "/usr/lib/rubik/cells/bar-status.sh"
+depends = ["F4.0"]
+order = 1
+
+[cell.F4.2]
+name = "launcher"
+type = "script"
+exec = "/usr/lib/rubik/cells/launcher.sh"
+depends = ["F4.0"]
+order = 2
+
+[cell.F4.3]
+name = "terminal"
+type = "script"
+exec = "/usr/lib/rubik/cells/terminal.sh"
+depends = ["F4.0"]
+order = 3
+
+[cell.F4.4]
+name = "compositor"
+type = "script"
+exec = "/usr/lib/rubik/cells/compositor.sh"
+depends = ["F4.0"]
+optional = true
+order = 4
+
+[cell.F4.5]
+name = "notifier"
+type = "script"
+exec = "/usr/lib/rubik/cells/notifier.sh"
+depends = ["F4.0"]
+order = 5
+
+[cell.F4.6]
+name = "wallpaper"
+type = "script"
+exec = "/usr/lib/rubik/cells/wallpaper.sh"
+depends = ["F4.0"]
+order = 6
+
+[cell.F4.7]
+name = "clipboard"
+type = "script"
+exec = "/usr/lib/rubik/cells/clipboard.sh"
+depends = ["F4.3"]
+order = 7
+
+[cell.F4.8]
+name = "idle-manager"
+type = "script"
+exec = "/usr/lib/rubik/cells/idle-manager.sh"
+depends = ["F4.0"]
+order = 8
+
+# ── Face 5 — Security ───────────────────────────
+
+[cell.F5.0]
+name = "apparmor"
+type = "systemd"
+unit = "apparmor"
+depends = ["F0.0"]
+critical = true
+order = 0
+
+[cell.F5.1]
+name = "sandbox-exec"
+type = "script"
+exec = "/usr/lib/rubik/cells/sandbox-exec.sh"
+depends = ["F5.0"]
+order = 1
+
+[cell.F5.2]
+name = "audit"
+type = "systemd"
+unit = "auditd"
+depends = ["F5.0"]
+optional = true
+order = 2
+
+[cell.F5.3]
+name = "crypto"
+type = "script"
+exec = "/usr/lib/rubik/cells/crypto.sh"
+depends = ["F5.0"]
+order = 3
+
+[cell.F5.4]
+name = "integrity"
+type = "script"
+exec = "/usr/lib/rubik/cells/integrity.sh"
+depends = ["F0.0"]
+order = 4
+
+[cell.F5.5]
+name = "firejail"
+type = "script"
+exec = "/usr/lib/rubik/cells/firejail.sh"
+depends = ["F5.0"]
+optional = true
+order = 5
+
+[cell.F5.6]
+name = "hardened-kernel"
+type = "sysctl"
+exec = "/etc/sysctl.d/99-rubik-security.conf"
+depends = ["F0.0"]
+order = 6
+
+[cell.F5.7]
+name = "update-auth"
+type = "script"
+exec = "/usr/lib/rubik/cells/update-auth.sh"
+depends = ["F5.0"]
+order = 7
+
+[cell.F5.8]
+name = "cell-isolation"
+type = "script"
+exec = "/usr/lib/rubik/cells/cell-isolation.sh"
+depends = ["F5.0", "F1.2"]
+order = 8

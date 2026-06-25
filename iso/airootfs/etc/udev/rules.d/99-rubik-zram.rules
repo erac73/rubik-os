@@ -1,0 +1,11 @@
+# ───────────────────────────────────────────────
+# Rubik OS — ZRAM udev rules
+# Automatically configure ZRAM parameters
+# ───────────────────────────────────────────────
+
+# Set ZRAM compression algorithm to zstd
+ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd"
+
+# Set ZRAM size to 75% of total RAM (calculated by rubik-init)
+# This is a fallback — rubik-init sets the size dynamically
+ACTION=="add", KERNEL=="zram0", RUN+="/usr/lib/rubik/cells/zram-udev.sh"

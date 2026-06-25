@@ -1,0 +1,33 @@
+[Unit]
+Description=Rubik OS Cell: %i
+Documentation=https://rubik-os.org/docs/cells
+BindsTo=rubikd.service
+After=rubikd.service
+PartOf=rubikd.service
+
+[Service]
+Type=exec
+ExecStart=/usr/lib/rubik/cells/%i.sh start
+ExecStop=/usr/lib/rubik/cells/%i.sh stop
+ExecReload=/usr/lib/rubik/cells/%i.sh restart
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+
+# Resource isolation
+MemoryMax=256M
+MemoryHigh=192M
+CPUAccounting=yes
+MemoryAccounting=yes
+IOAccounting=yes
+TasksAccounting=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+NoNewPrivileges=yes
+
+# OOM configuration
+OOMScoreAdjust=500
+
+[Install]
+WantedBy=rubikd.service

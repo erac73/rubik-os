@@ -1,0 +1,100 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# ───────────────────────────────────────────────
+# rubik-core — Base Rubik OS system package
+# Contains: orchestrator, cell definitions, face scripts
+# ───────────────────────────────────────────────
+
+pkgname=rubik-core
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS core system — cell orchestrator and face definitions"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=(
+    'bash'
+    'systemd'
+    'coreutils'
+    'procps-ng'
+    'gawk'
+    'grep'
+    'sed'
+)
+optdepends=(
+    'earlyoom: OOM guard (F0.3)'
+    'zram-generator: ZRAM management (F0.1)'
+    'irqbalance: IRQ balancing (F0.6)'
+    'chrony: NTP sync (F3.8)'
+)
+conflicts=()
+replaces=()
+source=(
+    "rubikd"
+    "rubikctl"
+    "cells.toml"
+    "faces/face-0.sh"
+    "faces/face-1.sh"
+    "faces/face-2.sh"
+    "faces/face-3.sh"
+    "faces/face-4.sh"
+    "faces/face-5.sh"
+    "cells/memory-compression.sh"
+    "cells/oom-guard.sh"
+    "cells/cache-tune.sh"
+    "cells/cpu-gov.sh"
+)
+sha256sums=(
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+)
+
+package() {
+    # Orchestrator
+    install -Dm755 "$srcdir/rubikd" "$pkgdir/usr/bin/rubikd"
+    install -Dm755 "$srcdir/rubikctl" "$pkgdir/usr/bin/rubikctl"
+
+    # Configuration
+    install -Dm644 "$srcdir/cells.toml" "$pkgdir/etc/rubik/cells.toml"
+
+    # Faces
+    for face in 0 1 2 3 4 5; do
+        install -Dm755 "$srcdir/faces/face-${face}.sh" \
+            "$pkgdir/usr/lib/rubik/faces/face-${face}.sh"
+    done
+
+    # Cells
+    install -Dm755 "$srcdir/cells/memory-compression.sh" \
+        "$pkgdir/usr/lib/rubik/cells/memory-compression.sh"
+    install -Dm755 "$srcdir/cells/oom-guard.sh" \
+        "$pkgdir/usr/lib/rubik/cells/oom-guard.sh"
+    install -Dm755 "$srcdir/cells/cache-tune.sh" \
+        "$pkgdir/usr/lib/rubik/cells/cache-tune.sh"
+    install -Dm755 "$srcdir/cells/cpu-gov.sh" \
+        "$pkgdir/usr/lib/rubik/cells/cpu-gov.sh"
+
+    # Systemd services
+    install -Dm644 "$srcdir/../systemd/rubikd.service" \
+        "$pkgdir/usr/lib/systemd/system/rubikd.service"
+    install -Dm644 "$srcdir/../systemd/rubik-cell@.service" \
+        "$pkgdir/usr/lib/systemd/system/rubik-cell@.service"
+
+    # Sysctl
+    install -Dm644 "$srcdir/../sysctl/90-rubik-memory.conf" \
+        "$pkgdir/usr/lib/sysctl.d/90-rubik-memory.conf"
+
+    # Documentation
+    install -Dm644 "$srcdir/../README.md" \
+        "$pkgdir/usr/share/doc/rubik/README.md"
+}

@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubik-init — First-boot initialization
+# Called by initramfs after mounting root
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RUBIK_ROOT="${RUBIK_ROOT:-/usr/lib/rubik}"
+RUBIK_CONFIG="${RUBIK_CONFIG:-/etc/rubik}"
+RUBIK_LOG="${RUBIK_LOG:-/var/log/rubik}"
+RUBIK_RUN="${RUBIK_RUN:-/run/rubik}"
+
+log() { echo "[rubik-init] $1"; }
+
+# ── Filesystem Structure ──────────────────────
+setup_filesystem() {
+    log "Creating Rubik OS directory layout"
+
+    mkdir -p "$RUBIK_RUN"
+    mkdir -p "$RUBIK_LOG"
+    mkdir -p /var/cache/rubik
+    mkdir -p /var/lib/rubik
+    mkdir -p /tmp/rubik
+
+    # /tmp as tmpfs (handled by systemd, but ensure mount)
+    mountpoint -q /tmp || mount -t tmpfs -o size=25%,noatime tmpfs /tmp
+}
+
+# ── Memory Baseline ────────────────────────────
+setup_memory_baseline() {
+    log "Configuring memory baselines"
+
+    local total_ram_kb
+    total_ram_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo)
+    local total_ram_mb=$((total_ram_kb / 1024))
+
+    # Calculate and set min_free_kbytes (1% of RAM)
+    local min_free=$((total_ram_kb / 100))
+    echo "$min_free" > /proc/sys/vm/min_free_kbytes 2>/dev/null || true
+    log "RAM: ${total_ram_mb}MB, min_free_kbytes: $min_free"
+}
+
+# ── Hardware Detection ─────────────────────────
+detect_hardware() {
+    log "Detecting hardware configuration"
+
+    # CPU cores
+    local cores
+    cores=$(nproc)
+    log "CPU cores: $cores"
+
+    # Disk type
+    if [[ -d /sys/block ]] && ls /sys/block | grep -q "nvme\|sd"; then
+        for disk in /sys/block/sd*; do
+            if [[ -f "$disk/queue/rotational" ]]; then
+                local rotational
+                rotational=$(cat "$disk/queue/rotational")
+                if [[ "$rotational" == "0" ]]; then
+                    log "Detected SSD: $(basename "$disk")"
+                fi
+            fi
+        done
+    fi
+
+    # GPU (basic)
+    if command -v lspci &>/dev/null; then
+        local gpu
+        gpu=$(lspci | grep -i "vga\|3d\|display" | head -1 | cut -d: -f3)
+        log "GPU: $gpu"
+    fi
+
+    # Save hardware profile
+    {
+        echo "cpu_cores=$cores"
+        echo "total_ram_mb=$(( $(awk '/MemTotal/{print $2}' /proc/meminfo) / 1024 ))"
+        lspci 2>/dev/null | grep -i "vga\|3d" | head -1 || echo "gpu=unknown"
+    } > "$RUBIK_RUN/hardware.profile"
+}
+
+# ── Rubik Cell Bootstrap ───────────────────────
+bootstrap_cells() {
+    log "Bootstrapping Rubik cells"
+
+    # Read cell definitions and start in dependency order
+    if [[ -f "$RUBIK_CONFIG/cells.toml" ]]; then
+        # Extract cells sorted by 'order' and start them
+        grep -A8 '^\[cell\.' "$RUBIK_CONFIG/cells.toml" | \
+        grep -E '^(name|order|type)' | \
+        paste - - - | \
+        sort -k2 -t'=' -n | \
+        while IFS=$'\t' read -r line; do
+            local name
+            name=$(echo "$line" | grep -oP 'name\s*=\s*"\K[^"]+')
+            local order
+            order=$(echo "$line" | grep -oP 'order\s*=\s*\K[0-9-]+')
+            local ctype
+            ctype=$(echo "$line" | grep -oP 'type\s*=\s*"\K[^"]+')
+
+            if [[ "$order" -ge 0 ]]; then
+                log "  Cell: $name (type=$ctype, order=$order)"
+            fi
+        done
+    else
+        log "No cells.toml found, using built-in defaults"
+    fi
+}
+
+# ── First Boot Welcome ─────────────────────────
+welcome() {
+    cat << "EOF"
+╔═══════════════════════════════════════════╗
+║      Rubik OS — Optimized. Decentralized.   ║
+║          6 faces · 54 cells · 1 system      ║
+╚═══════════════════════════════════════════╝
+
+  Each face of the Rubik rotates independently.
+  Each cell runs in isolation.
+  Nothing is wasted.
+
+  Documentation: https://rubik-os.org/docs
+  Report issues: https://github.com/rubik-os/issues
+EOF
+}
+
+# ── Main ──────────────────────────────────────
+main() {
+    log "Rubik OS initialization started"
+
+    setup_filesystem
+    setup_memory_baseline
+    detect_hardware
+    bootstrap_cells
+    welcome
+
+    log "Rubik OS initialized"
+}
+
+main "$@"

@@ -1,0 +1,240 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubikd — Rubik OS Cell Orchestrator
+#
+# Each "cell" is a systemd service unit. The orchestrator
+# manages dependencies, health checks, and rotation.
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RUBIK_ROOT="${RUBIK_ROOT:-/usr/lib/rubik}"
+RUBIK_CONFIG="${RUBIK_CONFIG:-/etc/rubik}"
+RUBIK_RUN="${RUBIK_RUN:-/run/rubik}"
+RUBIK_LOG="${RUBIK_LOG:-/var/log/rubik}"
+
+# ── Colors ──────────────────────────────────────
+RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; BOLD='\e[1m'; NC='\e[0m'
+
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+
+# ── Cell Status ─────────────────────────────────
+# Each cell file at /usr/lib/rubik/cells/<name>.sh defines:
+#   cell_start()   — start the cell
+#   cell_stop()    — stop the cell
+#   cell_health()  — return 0 if healthy
+#   cell_deps()    — echo "dep1 dep2"
+
+cell_status() {
+    local cell="$1"
+    local cell_file="$RUBIK_ROOT/cells/$cell.sh"
+
+    if [[ ! -f "$cell_file" ]]; then
+        echo "unknown"
+        return 1
+    fi
+
+    # shellcheck source=/dev/null
+    source "$cell_file"
+
+    if declare -f cell_health >/dev/null; then
+        if cell_health 2>/dev/null; then
+            echo "healthy"
+        else
+            echo "degraded"
+        fi
+    elif systemctl is-active --quiet "rubik-cell@$cell" 2>/dev/null; then
+        echo "active"
+    else
+        echo "inactive"
+    fi
+}
+
+# ── Start Cell ──────────────────────────────────
+cell_start() {
+    local cell="$1"
+    local cell_file="$RUBIK_ROOT/cells/$cell.sh"
+
+    if [[ ! -f "$cell_file" ]]; then
+        error "Cell '$cell' not found at $cell_file"
+        return 1
+    fi
+
+    # shellcheck source=/dev/null
+    source "$cell_file"
+
+    # Start dependencies first
+    if declare -f cell_deps >/dev/null; then
+        for dep in $(cell_deps); do
+            if [[ "$(cell_status "$dep")" == "inactive" ]]; then
+                warn "Starting dependency: $dep"
+                cell_start "$dep"
+            fi
+        done
+    fi
+
+    if declare -f cell_start >/dev/null; then
+        cell_start
+        log "Cell '$cell' started"
+    else
+        systemctl start "rubik-cell@$cell" 2>/dev/null || {
+            error "Failed to start cell '$cell'"
+            return 1
+        }
+        log "Cell '$cell' started (systemd)"
+    fi
+}
+
+# ── Stop Cell ───────────────────────────────────
+cell_stop() {
+    local cell="$1"
+    local cell_file="$RUBIK_ROOT/cells/$cell.sh"
+
+    if [[ ! -f "$cell_file" ]]; then
+        return 0
+    fi
+
+    # shellcheck source=/dev/null
+    source "$cell_file"
+
+    if declare -f cell_stop >/dev/null; then
+        cell_stop
+    fi
+
+    systemctl stop "rubik-cell@$cell" 2>/dev/null || true
+    log "Cell '$cell' stopped"
+}
+
+# ── Rotate Cell (update in-place) ───────────────
+cell_rotate() {
+    local cell="$1"
+    log "Rotating cell '$cell'..."
+    cell_stop "$cell"
+    sleep 1
+    cell_start "$cell"
+    log "Cell '$cell' rotated"
+}
+
+# ── List All Cells ──────────────────────────────
+list_cells() {
+    echo -e "${BOLD}Cell Status Overview${NC}"
+    echo "──────────────────────────────────────"
+    for cell_file in "$RUBIK_ROOT/cells/"*.sh; do
+        local cell_name
+        cell_name="$(basename "$cell_file" .sh)"
+        local status
+        status=$(cell_status "$cell_name")
+        local icon
+        case "$status" in
+            healthy)  icon="${GREEN}●${NC}" ;;
+            degraded) icon="${YELLOW}◐${NC}" ;;
+            active)   icon="${GREEN}○${NC}" ;;
+            inactive) icon="${RED}○${NC}" ;;
+            *)        icon="${YELLOW}?${NC}" ;;
+        esac
+        echo -e "  $icon $cell_name"
+    done
+}
+
+# ── Face Operations ─────────────────────────────
+face_rotate() {
+    local face="$1"
+    log "Rotating all cells in face '$face'..."
+    for cell_file in "$RUBIK_ROOT/faces/$face/"*.sh; do
+        if [[ -f "$cell_file" ]]; then
+            local cell_name
+            cell_name="$(basename "$cell_file" .sh)"
+            cell_rotate "$cell_name"
+        fi
+    done
+    log "Face '$face' fully rotated"
+}
+
+face_status() {
+    local face="$1"
+    echo -e "${BOLD}Face $face Status${NC}"
+    echo "──────────────────────────────────────"
+    for cell_file in "$RUBIK_ROOT/faces/$face/"*.sh; do
+        if [[ -f "$cell_file" ]]; then
+            local cell_name
+            cell_name="$(basename "$cell_file" .sh)"
+            local status
+            status=$(cell_status "$cell_name")
+            echo "  $cell_name: $status"
+        fi
+    done
+}
+
+# ── Health Check (all cells) ────────────────────
+health_check() {
+    local degraded=0
+    for cell_file in "$RUBIK_ROOT/cells/"*.sh; do
+        local cell_name
+        cell_name="$(basename "$cell_file" .sh)"
+        local status
+        status=$(cell_status "$cell_name")
+        if [[ "$status" != "healthy" && "$status" != "active" ]]; then
+            warn "Cell '$cell_name' is $status"
+            degraded=$((degraded + 1))
+        fi
+    done
+    if [[ $degraded -eq 0 ]]; then
+        log "All cells healthy"
+    else
+        warn "$degraded cell(s) degraded"
+    fi
+    return $degraded
+}
+
+# ── CLI Entry Point ─────────────────────────────
+main() {
+    mkdir -p "$RUBIK_RUN" "$RUBIK_LOG"
+
+    case "${1:-}" in
+        status)
+            list_cells
+            ;;
+        health)
+            health_check
+            ;;
+        cell)
+            case "${2:-}" in
+                start)   cell_start "${3:?Missing cell name}" ;;
+                stop)    cell_stop "${3:?Missing cell name}" ;;
+                rotate)  cell_rotate "${3:?Missing cell name}" ;;
+                status)  cell_status "${3:?Missing cell name}" ;;
+                *)
+                    echo "Usage: rubikctl cell {start|stop|rotate|status} <cell>"
+                    exit 1
+                    ;;
+            esac
+            ;;
+        face)
+            case "${2:-}" in
+                rotate)  face_rotate "${3:?Missing face name}" ;;
+                status)  face_status "${3:?Missing face name}" ;;
+                *)
+                    echo "Usage: rubikctl face {rotate|status} <face>"
+                    exit 1
+                    ;;
+            esac
+            ;;
+        *)
+            echo "Rubik OS Cell Orchestrator"
+            echo ""
+            echo "Usage:"
+            echo "  rubikctl status              List all cells and their status"
+            echo "  rubikctl health              Run health check on all cells"
+            echo "  rubikctl cell start <cell>   Start a specific cell"
+            echo "  rubikctl cell stop <cell>    Stop a specific cell"
+            echo "  rubikctl cell rotate <cell>  Recycle a cell (update in-place)"
+            echo "  rubikctl cell status <cell>  Check single cell status"
+            echo "  rubikctl face rotate <face>  Rotate entire face"
+            echo "  rubikctl face status <face>  Status of all cells in a face"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
