@@ -88,6 +88,16 @@ jobs:
             iso/airootfs/etc/sysctl.d/99-rubik-security.conf \
             iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service \
             iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik.target \
+            scripts/rubik-network \
+            scripts/rubik-recovery \
+            scripts/rubik-bench \
+            iso/airootfs/etc/apparmor.d/rubik/rubik-cell \
+            iso/airootfs/etc/apparmor.d/rubik/rubik-cell-network \
+            iso/airootfs/etc/apparmor.d/rubik/rubik-cell-security \
+            iso/airootfs/etc/rsyslog.d/30-rubik.conf \
+            iso/airootfs/etc/logrotate.d/rubik \
             packages/core/rubik-core/PKGBUILD \
             assets/logo.svg \
             README.md \

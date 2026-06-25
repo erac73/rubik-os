@@ -1,0 +1,10 @@
+[Unit]
+Description=Rubik OS — All cells and faces
+Documentation=https://rubik-os.org/docs
+Requires=rubikd.service
+After=rubikd.service
+Wants=sysinit.target
+DefaultDependencies=no
+
+[Install]
+WantedBy=multi-user.target

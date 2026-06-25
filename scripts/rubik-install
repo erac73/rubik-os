@@ -174,7 +174,8 @@ install_base() {
     pacstrap -K /mnt base base-devel linux-lts linux-firmware \
         grub efibootmgr btrfs-progs \
         networkmanager iwd nftables chrony \
-        sudo git vim zram-generator
+        sudo git vim zram-generator \
+        openssh rsyslog apparmor audit
 
     log "Base system installed"
 }
@@ -186,8 +187,15 @@ configure_system() {
     # Generate fstab
     genfstab -U /mnt >> /mnt/etc/fstab
 
+    # Get username before chroot
+    if $NONINTERACTIVE; then
+        INSTALL_USER="rubik"
+    elif [[ -z "$INSTALL_USER" ]]; then
+        read -rp "Username: " INSTALL_USER
+    fi
+
     # Chroot and configure
-    arch-chroot /mnt /bin/bash << 'CHROOT'
+    arch-chroot /mnt /bin/bash << CHROOT
         # Timezone
         ln -sf /usr/share/zoneinfo/UTC /etc/localtime
         hwclock --systohc
@@ -205,9 +213,9 @@ configure_system() {
         passwd
 
         # Create user
-        read -rp "Username: " username
-        useradd -m -G wheel "$username"
-        passwd "$username"
+        useradd -m -G wheel "$INSTALL_USER"
+        echo "Set password for $INSTALL_USER:"
+        passwd "$INSTALL_USER"
         echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
 
         # Bootloader
@@ -221,6 +229,9 @@ configure_system() {
         systemctl enable nftables
         systemctl enable chronyd
         systemctl enable rubikd
+        systemctl enable apparmor
+        systemctl enable auditd
+        systemctl enable rsyslog
 
         # Copy Rubik OS configuration
         cp -r /usr/share/rubik/* /etc/rubik/
@@ -232,6 +243,7 @@ CHROOT
 # ── Non-interactive mode ────────────────────────
 NONINTERACTIVE=false
 DISK_DEV=""
+INSTALL_USER=""
 
 parse_args() {
     while [[ $# -gt 0 ]]; do
@@ -247,6 +259,52 @@ parse_args() {
     done
 }
 
+# ── Validation ─────────────────────────────────
+validate_environment() {
+    header "Validating Environment"
+    local errors=0
+
+    if [[ $EUID -ne 0 ]]; then
+        error "Must be run as root"
+        errors=$((errors + 1))
+    fi
+
+    for cmd in parted mkfs.fat mkfs.ext4 cryptsetup mkfs.btrfs btrfs pacstrap genfstab arch-chroot; do
+        if ! command -v "$cmd" &>/dev/null; then
+            warn "Missing: $cmd"
+            errors=$((errors + 1))
+        fi
+    done
+
+    if [[ ! -f /usr/share/archiso/configs/releng/pacman.conf ]]; then
+        warn "archiso configs not found — ISO build may fail"
+    fi
+
+    if [[ $errors -eq 0 ]]; then
+        log "Environment OK"
+    else
+        warn "$errors prerequisite(s) missing"
+    fi
+    return $errors
+}
+
+# ── Summary ────────────────────────────────────
+print_summary() {
+    header "Installation Summary"
+    echo "  Disk:         $DISK_DEV"
+    echo "  Partitioning: GPT (EFI + Boot + LUKS/Btrfs)"
+    echo "  Compress:     zstd:3 (root, home)"
+    echo "  Kernel:       linux-lts (safety)"
+    echo "  User:         $INSTALL_USER"
+    echo ""
+    echo "  Post-install:"
+    echo "    1. Reboot into Rubik OS"
+    echo "    2. Run: rubikctl bootstrap"
+    echo "    3. Customize cells: rubikctl cell start <name>"
+    echo "    4. Benchmark: rubik-bench all"
+    echo ""
+}
+
 # ── Main ───────────────────────────────────────
 main() {
     parse_args "$@"
@@ -258,6 +316,7 @@ main() {
 ╚═══════════════════════════════════════════╝
 EOF
 
+    validate_environment || warn "Environment validation had warnings"
     detect_hardware
     if $NONINTERACTIVE && [[ -n "$DISK_DEV" ]]; then
         log "Non-interactive mode: installing to $DISK_DEV"
@@ -268,6 +327,7 @@ EOF
     mount_partitions
     install_base
     configure_system
+    print_summary
 
     header "Installation Complete"
     echo "  Rubik OS has been installed."

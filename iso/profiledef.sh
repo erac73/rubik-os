@@ -62,6 +62,11 @@ file_permissions=(
   ["/etc/apparmor.d/rubik/rubik-cell-security"]="0:0:644"
   ["/etc/rsyslog.d/30-rubik.conf"]="0:0:644"
   ["/etc/logrotate.d/rubik"]="0:0:644"
+  ["/usr/lib/systemd/rubik-services/rubik-face@.service"]="0:0:644"
+  ["/usr/lib/systemd/rubik-services/rubik.target"]="0:0:644"
+  ["/usr/bin/rubik-network"]="0:0:755"
+  ["/usr/bin/rubik-recovery"]="0:0:755"
+  ["/usr/bin/rubik-bench"]="0:0:755"
   ["/root"]="0:0:750"
   ["/root/.automated_script.sh"]="0:0:755"
 )

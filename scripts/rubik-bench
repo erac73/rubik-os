@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubik-bench — Rubik OS Benchmark Suite
+# Measures ZRAM performance, memory compression,
+# disk I/O, and CPU scheduler latency.
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; BOLD='\e[1m'; NC='\e[0m'
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+header(){ echo -e "\n${CYAN}══ $1 ══${NC}\n"; }
+
+RESULTS_DIR="/var/log/rubik/benchmarks"
+
+# ── ZRAM Performance ─────────────────────────
+zram_bench() {
+    header "ZRAM Compression Benchmark"
+    mkdir -p "$RESULTS_DIR"
+
+    for zram in /sys/block/zram*; do
+        [[ -d "$zram" ]] || continue
+        local name
+        name=$(basename "$zram")
+        echo "  Device: $name"
+        echo "    Compressed: $(cat "$zram/mm_stat" 2>/dev/null | awk '{print $2}' || echo 'N/A')"
+        echo "    Original:   $(cat "$zram/mm_stat" 2>/dev/null | awk '{print $1}' || echo 'N/A')"
+        echo "    Ratio:      $(cat "$zram/mm_stat" 2>/dev/null | awk '{if($1>0) printf \"%.2f%%\", $2/$1*100}' || echo 'N/A')"
+        echo "    Algorithm:  $(cat "$zram/comp_algorithm" 2>/dev/null || echo 'N/A')"
+        echo "    Backend:    $(cat /sys/block/$name/queue/scheduler 2>/dev/null || echo 'N/A')"
+        echo ""
+    done
+}
+
+# ── Memory Pressure ──────────────────────────
+memory_bench() {
+    header "Memory Pressure & Swap"
+    echo "  MemTotal:     $(awk '/MemTotal/{printf "%.1f GB", $2/1024/1024}' /proc/meminfo)"
+    echo "  SwapTotal:    $(awk '/SwapTotal/{printf "%.1f GB", $2/1024/1024}' /proc/meminfo)"
+    echo "  SwapFree:     $(awk '/SwapFree/{printf "%.1f GB", $2/1024/1024}' /proc/meminfo)"
+    echo "  Available:    $(awk '/MemAvailable/{printf "%.1f GB", $2/1024/1024}' /proc/meminfo)"
+    echo "  Pressure:     $(cat /proc/pressure/memory 2>/dev/null || echo 'N/A')"
+    echo ""
+}
+
+# ── CPU Scheduler Latency ────────────────────
+cpu_bench() {
+    header "CPU Scheduler"
+    echo "  Scheduler:    $(cat /sys/kernel/debug/sched/preempt 2>/dev/null || cat /sys/kernel/sched/preempt 2>/dev/null || echo 'N/A')"
+    echo "  Governor:     $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo 'N/A')"
+    echo "  Cores:        $(nproc)"
+    echo "  Architecture: $(uname -m)"
+    echo ""
+}
+
+# ── Disk I/O ─────────────────────────────────
+disk_bench() {
+    header "Disk I/O"
+    echo "  Reading: $(dd if=/dev/zero of=/tmp/rubik-bench.tmp bs=1M count=256 2>&1 | tail -1)"
+    rm -f /tmp/rubik-bench.tmp
+    echo "  Mounts:"
+    mount | grep -E "^/dev/(sd|nvme|vd)" | awk '{printf "    %-20s %-20s %s\n", $1, $3, $5}' || true
+    echo ""
+}
+
+# ── All Benchmarks ───────────────────────────
+run_all() {
+    local report="$RESULTS_DIR/bench-$(date +%Y%m%d-%H%M%S).log"
+    mkdir -p "$RESULTS_DIR"
+    {
+        echo "Rubik OS Benchmark Report"
+        echo "Date: $(date -Iseconds)"
+        echo "Kernel: $(uname -r)"
+        echo ""
+        zram_bench
+        memory_bench
+        cpu_bench
+        disk_bench
+    } > "$report"
+    log "Benchmark saved to $report"
+    cat "$report"
+}
+
+# ── Main ─────────────────────────────────────
+main() {
+    header "Rubik OS Benchmark Suite"
+
+    case "${1:-all}" in
+        zram)
+            zram_bench
+            ;;
+        memory|mem)
+            memory_bench
+            ;;
+        cpu)
+            cpu_bench
+            ;;
+        disk|io)
+            disk_bench
+            ;;
+        all)
+            run_all
+            ;;
+        *)
+            echo "Usage: rubik-bench {zram|memory|cpu|disk|all}"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

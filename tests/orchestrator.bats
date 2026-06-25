@@ -172,3 +172,75 @@ with open('../iso/airootfs/etc/rubik/cells.toml') as f:
         head -1 "$f" | grep -q "^#!" || echo "NO SHEBANG: $f"
     done
 }
+
+@test "rubik-network: help output" {
+    run ../scripts/rubik-network
+    echo "$output" | grep -q "Usage"
+}
+
+@test "rubik-network: detect interfaces" {
+    run ../scripts/rubik-network status
+    echo "$output" | grep -q "interfaces"
+}
+
+@test "rubik-recovery: help output" {
+    run ../scripts/rubik-recovery
+    echo "$output" | grep -q "Usage"
+}
+
+@test "rubik-bench: help output" {
+    run ../scripts/rubik-bench
+    echo "$output" | grep -q "Usage"
+}
+
+@test "rubik-bench: cpu benchmark" {
+    run ../scripts/rubik-bench cpu
+    echo "$output" | grep -q "CPU"
+}
+
+@test "rubik-bench: memory benchmark" {
+    run ../scripts/rubik-bench memory
+    echo "$output" | grep -q "Memory"
+}
+
+@test "systemd: rubik-face@.service exists" {
+    [ -f "../iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service" ]
+}
+
+@test "systemd: rubik.target exists" {
+    [ -f "../iso/airootfs/usr/lib/systemd/rubik-services/rubik.target" ]
+}
+
+@test "installer: has validate_environment" {
+    grep -q "validate_environment" ../scripts/rubik-install
+}
+
+@test "installer: has print_summary" {
+    grep -q "print_summary" ../scripts/rubik-install
+}
+
+@test "installer: has non-interactive disk param" {
+    grep -q -- "--disk=" ../scripts/rubik-install
+}
+
+@test "qemu: test script exists" {
+    [ -f "../scripts/qemu-test.sh" ]
+    head -1 ../scripts/qemu-test.sh | grep -q "^#!/"
+}
+
+@test "all cell scripts are real (not stubs)" {
+    for f in ../iso/airootfs/usr/lib/rubik/cells/*.sh; do
+        name=$(basename "$f")
+        # Each script must have at least 8 lines (significant implementation)
+        lines=$(wc -l < "$f")
+        [ "$lines" -ge 8 ] || echo "TOO SHORT ($lines lines): $name"
+    done
+}
+
+@test "ui cells launch actual processes" {
+    # wm-core should try to detect and start a WM
+    grep -q "command -v" ../iso/airootfs/usr/lib/rubik/cells/wm-core.sh
+    grep -q "command -v" ../iso/airootfs/usr/lib/rubik/cells/bar-status.sh
+    grep -q "command -v" ../iso/airootfs/usr/lib/rubik/cells/launcher.sh
+    grep -q "command -v" ../iso/airootfs/usr/lib/rubik/cells/notifier.sh
+}

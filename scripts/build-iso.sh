@@ -53,9 +53,18 @@ prepare_iso_root() {
     cp -r "$ISO_DIR/airootfs/etc/"* "$work_root/etc/"
     cp -r "$ISO_DIR/airootfs/usr/"* "$work_root/usr/"
 
+    # Copy system scripts
+    cp "$SCRIPT_DIR/rubik-network" "$work_root/usr/bin/rubik-network"
+    cp "$SCRIPT_DIR/rubik-recovery" "$work_root/usr/bin/rubik-recovery"
+    cp "$SCRIPT_DIR/rubik-bench" "$work_root/usr/bin/rubik-bench"
+    cp "$SCRIPT_DIR/qemu-test.sh" "$work_root/usr/bin/qemu-test-rubik"
+
     # Set correct permissions
     chmod 755 "$work_root/usr/lib/rubik/faces/"* 2>/dev/null || true
     chmod 755 "$work_root/usr/lib/rubik/cells/"* 2>/dev/null || true
+    chmod 755 "$work_root/usr/bin/rubik-network" 2>/dev/null || true
+    chmod 755 "$work_root/usr/bin/rubik-recovery" 2>/dev/null || true
+    chmod 755 "$work_root/usr/bin/rubik-bench" 2>/dev/null || true
     chmod 644 "$work_root/etc/rubik/"* 2>/dev/null || true
 
     log "ISO root prepared at $work_root"

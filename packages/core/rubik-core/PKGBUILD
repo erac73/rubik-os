@@ -20,6 +20,7 @@ depends=(
     'grep'
     'sed'
     'bc'
+    'iproute2'
 )
 optdepends=(
     'earlyoom: OOM guard (F0.3)'
@@ -28,6 +29,11 @@ optdepends=(
     'chrony: NTP sync (F3.8)'
     'duperemove: Block dedup (F2.5)'
     'firejail: Sandboxing (F5.5)'
+    'river: Wayland compositor (F4.0)'
+    'waybar: Status bar (F4.1)'
+    'rofi: Application launcher (F4.2)'
+    'foot: Terminal emulator (F4.3)'
+    'dunst: Notification daemon (F4.5)'
 )
 conflicts=()
 replaces=()
@@ -75,6 +81,16 @@ source=(
     "cell-isolation.sh::../../iso/airootfs/usr/lib/rubik/cells/cell-isolation.sh"
     "rubikd.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service"
     "rubik-cell@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service"
+    "rubik-face@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service"
+    "rubik.target::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik.target"
+    "rubik-network::../../scripts/rubik-network"
+    "rubik-recovery::../../scripts/rubik-recovery"
+    "rubik-bench::../../scripts/rubik-bench"
+    "rubik-cell.apparmor::../../iso/airootfs/etc/apparmor.d/rubik/rubik-cell"
+    "rubik-cell-network.apparmor::../../iso/airootfs/etc/apparmor.d/rubik/rubik-cell-network"
+    "rubik-cell-security.apparmor::../../iso/airootfs/etc/apparmor.d/rubik/rubik-cell-security"
+    "30-rubik.conf::../../iso/airootfs/etc/rsyslog.d/30-rubik.conf"
+    "rubik-logrotate::../../iso/airootfs/etc/logrotate.d/rubik"
     "90-rubik-memory.conf::../../iso/airootfs/etc/sysctl.d/90-rubik-memory.conf"
     "99-rubik-security.conf::../../iso/airootfs/etc/sysctl.d/99-rubik-security.conf"
 )
@@ -111,6 +127,32 @@ package() {
         "$pkgdir/usr/lib/systemd/system/rubikd.service"
     install -Dm644 "$srcdir/rubik-cell@.service" \
         "$pkgdir/usr/lib/systemd/system/rubik-cell@.service"
+    install -Dm644 "$srcdir/rubik-face@.service" \
+        "$pkgdir/usr/lib/systemd/system/rubik-face@.service"
+    install -Dm644 "$srcdir/rubik.target" \
+        "$pkgdir/usr/lib/systemd/system/rubik.target"
+
+    # Utility scripts
+    install -Dm755 "$srcdir/rubik-network" \
+        "$pkgdir/usr/bin/rubik-network"
+    install -Dm755 "$srcdir/rubik-recovery" \
+        "$pkgdir/usr/bin/rubik-recovery"
+    install -Dm755 "$srcdir/rubik-bench" \
+        "$pkgdir/usr/bin/rubik-bench"
+
+    # AppArmor profiles
+    install -Dm644 "$srcdir/rubik-cell.apparmor" \
+        "$pkgdir/etc/apparmor.d/rubik/rubik-cell"
+    install -Dm644 "$srcdir/rubik-cell-network.apparmor" \
+        "$pkgdir/etc/apparmor.d/rubik/rubik-cell-network"
+    install -Dm644 "$srcdir/rubik-cell-security.apparmor" \
+        "$pkgdir/etc/apparmor.d/rubik/rubik-cell-security"
+
+    # Logging
+    install -Dm644 "$srcdir/30-rubik.conf" \
+        "$pkgdir/etc/rsyslog.d/30-rubik.conf"
+    install -Dm644 "$srcdir/rubik-logrotate" \
+        "$pkgdir/etc/logrotate.d/rubik"
 
     # Sysctl
     install -Dm644 "$srcdir/90-rubik-memory.conf" \

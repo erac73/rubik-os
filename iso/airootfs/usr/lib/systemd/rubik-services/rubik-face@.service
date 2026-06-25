@@ -1,0 +1,20 @@
+[Unit]
+Description=Rubik OS Face: %i
+Documentation=https://rubik-os.org/docs/faces
+BindsTo=rubikd.service
+After=rubikd.service
+PartOf=rubikd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/rubik/faces/face-%i.sh rotate
+ExecStop=/usr/lib/rubik/faces/face-%i.sh stop
+RemainAfterExit=yes
+
+# Resource limits for the face controller
+MemoryMax=64M
+CPUAccounting=yes
+MemoryAccounting=yes
+
+[Install]
+WantedBy=rubikd.service

@@ -1,0 +1,13 @@
+# Rubik OS GRUB theme
+# Install: copy to /boot/grub/themes/rubik/ and set GRUB_THEME
+
++ boot/grub/themes/rubik/theme.txt
+
+# Theme configuration
+title-text: "Rubik OS"
+title-font: "DejaVu Sans Bold 24"
+title-color: "#00ff88"
+desktop-image: "background.png"
+desktop-color: "#0a0a0a"
+terminal-font: "DejaVu Sans Mono 12"
+terminal-box: "terminal_box_*.png"

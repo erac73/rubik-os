@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubik-network — Rubik OS Network Manager
+# Configures network interfaces, firewall,
+# DNS, and bandwidth policies.
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; NC='\e[0m'
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+
+NET_CONF="/etc/rubik/network.toml"
+
+# ── Detection ─────────────────────────────────
+detect_interfaces() {
+    log "Detected network interfaces:"
+    for iface in /sys/class/net/*; do
+        local name
+        name=$(basename "$iface")
+        [[ "$name" == "lo" ]] && continue
+        local addr
+        addr=$(ip -4 addr show "$name" 2>/dev/null | grep -oP 'inet \K[\d.]+' || echo "unconfigured")
+        local state
+        state=$(cat "$iface/operstate" 2>/dev/null || echo "unknown")
+        echo "  $name — $state — $addr"
+    done
+}
+
+# ── Firewall rules (nftables) ─────────────────
+apply_firewall() {
+    log "Applying firewall rules..."
+    if command -v nft &>/dev/null; then
+        nft flush ruleset 2>/dev/null || true
+        nft -f /etc/nftables.conf 2>/dev/null && log "nftables loaded" || warn "nftables.conf not found"
+    else
+        warn "nftables not installed"
+    fi
+}
+
+# ── DNS config ───────────────────────────────
+configure_dns() {
+    log "Configuring DNS (systemd-resolved)..."
+    if command -v resolvectl &>/dev/null; then
+        resolvectl dns global 1.1.1.1 9.9.9.9
+        resolvectl domain global "~."
+        log "DNS set to Cloudflare + Quad9"
+    fi
+}
+
+# ── Bandwidth policy (network cell delegation) ──
+apply_bandwidth() {
+    local iface="${1:-eth0}"
+    local rate="${2:-1gbit}"
+    if command -v tc &>/dev/null; then
+        tc qdisc add dev "$iface" root tbf rate "$rate" burst 32kbit latency 400ms 2>/dev/null && \
+            log "Bandwidth limit: $rate on $iface" || warn "Could not set bandwidth on $iface"
+    fi
+}
+
+# ── Diagnostics ──────────────────────────────
+diagnostics() {
+    echo ""
+    echo "═ Network Diagnostics ═"
+    echo "  Hostname: $(hostname)"
+    echo "  DNS: $(resolvectl status 2>/dev/null | grep 'DNS Servers' | head -1 || echo 'N/A')"
+    echo "  Connectivity: $(ping -c1 -W2 1.1.1.1 &>/dev/null && echo 'OK' || echo 'FAIL')"
+    echo "  IPv6: $(ip -6 addr show scope global 2>/dev/null | grep -q inet6 && echo 'enabled' || echo 'none')"
+    echo "  Firewall: $(nft list ruleset 2>/dev/null | grep -q 'chain' && echo 'active' || echo 'inactive')"
+    echo ""
+}
+
+# ── Main ─────────────────────────────────────
+main() {
+    case "${1:-status}" in
+        status|detect)
+            detect_interfaces
+            ;;
+        firewall)
+            apply_firewall
+            ;;
+        dns)
+            configure_dns
+            ;;
+        bandwidth)
+            apply_bandwidth "${2:-}" "${3:-}"
+            ;;
+        diag|diagnostics)
+            diagnostics
+            ;;
+        all)
+            detect_interfaces
+            apply_firewall
+            configure_dns
+            diagnostics
+            ;;
+        *)
+            echo "Usage: rubik-network {status|firewall|dns|bandwidth [iface] [rate]|diag|all}"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

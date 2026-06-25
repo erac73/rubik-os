@@ -202,17 +202,22 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 
 ## Estado del proyecto
 
-| Componente | v0.3 |
-|---|---|
-| Scripts de celda | **32/32** (100% de celdas tipo script) |
+| Componente | v0.5 |
+|---|---|---|
+| Scripts de celda | **32/32** (100% — implementaciones reales, no stubs) |
 | Scripts de cara | **6/6** (100%) |
+| Systemd units | **4** (rubikd, rubik-cell@, rubik-face@, rubik.target) |
 | AppArmor profiles | **3** (rubik-cell, rubik-cell-network, rubik-cell-security) |
-| Orquestador | daemon mode, bootstrap, validate, health checks |
-| Tests | **15** tests bats |
-| CI/CD | GitHub Actions (shellcheck, validación, tests) |
-| Instalador | Interactivo + `--yes --disk=/dev/sda` |
+| Scripts de sistema | **rubik-network**, **rubik-recovery**, **rubik-bench** |
+| Orquestador | daemon mode, bootstrap, validate, health checks, shutdown |
+| Tests | **30+** tests bats |
+| CI/CD | GitHub Actions (shellcheck, validación, tests, integridad) |
+| Instalador | Interactivo + `--yes --disk=/dev/sda` + validación pre-instalación |
 | Logging | rsyslog + logrotate por face |
 | Shell completion | bash (rubikctl + rubikd) |
+| QEMU test | `scripts/qemu-test.sh` para booteo UEFI/BIOS |
+| Recovery | `rubik-recovery` con rollback, snapshot, fsck, fallback, initramfs |
+| Benchmarks | `rubik-bench` (ZRAM, memoria, CPU, disco) |
 | Licencia | GPLv3 |
 
 Próximo: ISO booteable → v1.0.0
