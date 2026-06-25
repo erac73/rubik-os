@@ -9,7 +9,7 @@
 [![RAM Idle](https://img.shields.io/badge/RAM_idle-80%E2%80%93120_MB-success)]()
 
 <p align="center">
-  <img src="https://via.placeholder.com/200x200/1a1a1a/4ec9b0?text=RubikOS" alt="Rubik OS Logo" width="200" height="200">
+  <img src="assets/logo.svg" alt="Rubik OS Logo" width="256" height="256">
 </p>
 
 ---
@@ -171,6 +171,8 @@ rubik-os/
 │   └── rubik-init           # Init del sistema
 ├── 📁 tests/
 │   └── test-zram.sh         # Tests de validación
+├── 📁 assets/
+│   └── logo.svg             # Logo oficial (SVG vectorial)
 ├── README.md
 └── LICENSE
 ```
