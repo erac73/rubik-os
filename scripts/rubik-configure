@@ -1,0 +1,352 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubik-configure — Rubik OS Post-Install Configuration
+# Sets up audio, Bluetooth, WiFi, GPU, printing,
+# power management, and desktop environment.
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; NC='\e[0m'
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+header(){ echo -e "\n${CYAN}══ $1 ══${NC}\n"; }
+
+CONF_DIR="/etc/rubik"
+
+# ── Audio (PipeWire) ──────────────────────────
+configure_audio() {
+    header "Configuring Audio"
+    mkdir -p /etc/pipewire /etc/wireplumber
+
+    # PipeWire main config
+    cat > /etc/pipewire/pipewire.conf.d/rubik.conf << 'PWCONF'
+context.properties = {
+    default.clock.rate = 48000
+    default.clock.allowed-rates = [ 44100 48000 96000 ]
+    default.clock.quantum = 256
+    default.clock.min-quantum = 32
+    default.clock.max-quantum = 2048
+}
+PWCONF
+
+    # WirePlumber policy for Rubik OS
+    cat > /etc/wireplumber/main.lua.d/90-rubik.lua << 'WPLUA'
+rule = {
+    matches = {
+        {
+            { "device.name", "matches", "alsa_*" },
+        },
+    },
+    apply_properties = {
+        ["session.suspend-timeout-seconds"] = 5,
+        ["node.nick"] = "Rubik Audio",
+    },
+}
+WPLUA
+
+    systemctl enable rubik-pipewire rubik-wireplumber 2>/dev/null || true
+    log "Audio: PipeWire + WirePlumber configured"
+}
+
+# ── Bluetooth ────────────────────────────────
+configure_bluetooth() {
+    header "Configuring Bluetooth"
+    mkdir -p /etc/bluetooth
+
+    cat > /etc/bluetooth/main.conf << 'BTCONF'
+[General]
+Name = Rubik OS
+Class = 0x000100
+DiscoverableTimeout = 30
+PairableTimeout = 0
+FastConnectable = true
+Enable = Source,Sink,Media,Socket
+ControllerMode = dual
+Experimental = true
+BTCONF
+
+    systemctl enable rubik-bluetooth 2>/dev/null || true
+    log "Bluetooth: bluez configured"
+}
+
+# ── WiFi ─────────────────────────────────────
+configure_wifi() {
+    header "Configuring WiFi"
+
+    # NetworkManager configuration
+    cat > /etc/NetworkManager/conf.d/rubik.conf << 'NMCONF'
+[main]
+plugins=keyfile
+dhcp=internal
+wifi.backend=iwd
+wifi.iwd.autoconnect=yes
+
+[connectivity]
+interval=0
+NMCONF
+
+    # iwd configuration
+    mkdir -p /etc/iwd
+    cat > /etc/iwd/main.conf << 'IWDCONF'
+[General]
+EnableNetworkConfiguration=true
+
+[Network]
+NameResolvingService=systemd
+IWDCONF
+
+    systemctl enable iwd NetworkManager systemd-resolved 2>/dev/null || true
+    log "WiFi: iwd + NetworkManager configured"
+}
+
+# ── GPU ──────────────────────────────────────
+configure_gpu() {
+    header "Detecting and Configuring GPU"
+    mkdir -p /etc/X11/xorg.conf.d
+
+    if ls /sys/class/drm/ | grep -qi "amdgpu\|radeon" 2>/dev/null; then
+        cat > /etc/X11/xorg.conf.d/20-amdgpu.conf << 'AMD'
+Section "Device"
+    Identifier "AMD"
+    Driver "amdgpu"
+    Option "TearFree" "true"
+    Option "DRI" "3"
+EndSection
+AMD
+        log "GPU: AMD driver configured"
+    fi
+
+    if ls /sys/class/drm/ | grep -qi "i915" 2>/dev/null; then
+        cat > /etc/X11/xorg.conf.d/20-intel.conf << 'INTEL'
+Section "Device"
+    Identifier "Intel"
+    Driver "modesetting"
+    Option "TearFree" "true"
+    Option "DRI" "3"
+    Option "AccelMethod" "sna"
+EndSection
+INTEL
+        log "GPU: Intel driver configured"
+    fi
+
+    if ls /sys/class/drm/ | grep -qi "nouveau\|nvidia" 2>/dev/null; then
+        cat > /etc/X11/xorg.conf.d/20-nvidia.conf << 'NVIDIA'
+Section "Device"
+    Identifier "NVIDIA"
+    Driver "nvidia"
+    Option "NoLogo" "true"
+    Option "AllowEmptyInitialConfiguration" "true"
+EndSection
+NVIDIA
+        log "GPU: NVIDIA driver configured"
+    fi
+}
+
+# ── Power Management ─────────────────────────
+configure_power() {
+    header "Configuring Power Management"
+
+    systemctl enable thermald tlp 2>/dev/null || true
+    systemctl mask systemd-rfkill.service systemd-rfkill.socket 2>/dev/null || true
+
+    cat > /etc/tlp.d/90-rubik.conf << 'TLPCONF'
+CPU_ENERGY_PERF_POLICY_ON_AC=performance
+CPU_ENERGY_PERF_POLICY_ON_BAT=power
+CPU_SCALING_GOVERNOR_ON_AC=performance
+CPU_SCALING_GOVERNOR_ON_BAT=powersave
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+WIFI_PWR_ON_AC=off
+WIFI_PWR_ON_BAT=on
+TLPCONF
+
+    log "Power: TLP + thermald configured"
+}
+
+# ── Printing ─────────────────────────────────
+configure_printing() {
+    header "Configuring Printing"
+
+    systemctl enable cups 2>/dev/null || true
+    usermod -a -G lp "$(logname 2>/dev/null || echo "rubik")" 2>/dev/null || true
+
+    log "Printing: CUPS enabled"
+}
+
+# ── Firewall ─────────────────────────────────
+configure_firewall() {
+    header "Configuring Firewall"
+
+    if command -v ufw &>/dev/null; then
+        ufw default deny incoming 2>/dev/null || true
+        ufw default allow outgoing 2>/dev/null || true
+        ufw enable 2>/dev/null || true
+        log "Firewall: UFW enabled (default deny incoming)"
+    fi
+}
+
+# ── System Tweaks ────────────────────────────
+configure_sysctl() {
+    header "Applying Kernel Parameters"
+
+    cat > /etc/sysctl.d/99-rubik-desktop.conf << 'SYSCTL'
+# Desktop responsiveness
+kernel.numa_balancing=0
+vm.dirty_ratio=10
+vm.dirty_background_ratio=5
+vm.swappiness=10
+vm.vfs_cache_pressure=50
+net.core.rmem_default=262144
+net.core.wmem_default=262144
+SYSCTL
+    sysctl --system &>/dev/null || true
+    log "Kernel parameters applied"
+}
+
+# ── User Environment ─────────────────────────
+configure_user() {
+    header "Setting Up User Environment"
+    local user="${1:-$(logname 2>/dev/null || echo "rubik")}"
+
+    # Add user to groups
+    usermod -a -G audio,video,network,wheel,storage,power,lp "$user" 2>/dev/null || true
+
+    # Create XDG dirs
+    su - "$user" -c "xdg-user-dirs-update 2>/dev/null" || true
+
+    # Default WM config (river)
+    local home
+    home=$(eval echo "~$user")
+    mkdir -p "$home/.config/river" "$home/.config/waybar"
+
+    # river config
+    if [[ ! -f "$home/.config/river/init" ]]; then
+        cat > "$home/.config/river/init" << 'RIVER'
+riverctl default-layout rivertile
+riverctl keyboard-layout us
+riverctl border-width 2
+riverctl -focus-color 0x00ff88
+riverctl -unfocused-color 0x444444
+riverctl -urgent-color 0xff0000
+
+# Super+Q to close focused view
+riverctl map normal Super+Shift Q close
+
+# Super+Return to start terminal
+riverctl map normal Super Return spawn foot
+
+# Super+D to start launcher
+riverctl map normal Super D spawn "rofi -show drun"
+
+# Super+Shift+E to exit river
+riverctl map normal Super+Shift E exit
+RIVER
+        chown -R "$user:$user" "$home/.config/river"
+    fi
+
+    # waybar config
+    if [[ ! -f "$home/.config/waybar/config.jsonc" ]]; then
+        cat > "$home/.config/waybar/config.jsonc" << 'WAYBAR'
+{
+    "layer": "top",
+    "position": "top",
+    "modules-left": ["river/tags"],
+    "modules-center": ["clock"],
+    "modules-right": ["pulseaudio", "network", "bluetooth", "cpu", "memory", "tray"],
+    "clock": { "format": "{:%H:%M:%S}" },
+    "pulseaudio": { "format": "{volume}% {icon}", "format-icons": ["🔇", "🔈", "🔉", "🔊"] },
+    "network": { "format-wifi": "{essid} ({signalStrength}%)", "format-ethernet": "🖥️" },
+    "bluetooth": { "format": "🦊 {device_name}" },
+    "cpu": { "format": "CPU {usage}%" },
+    "memory": { "format": "RAM {percentage}%" }
+}
+WAYBAR
+        chown -R "$user:$user" "$home/.config/waybar"
+    fi
+
+    log "User $user configured with river + waybar"
+}
+
+# ── All Configurations ───────────────────────
+configure_all() {
+    local user="${1:-}"
+    configure_audio
+    configure_bluetooth
+    configure_wifi
+    configure_gpu
+    configure_power
+    configure_printing
+    configure_firewall
+    configure_sysctl
+    if [[ -n "$user" ]]; then
+        configure_user "$user"
+    fi
+    log "All Rubik OS components configured"
+}
+
+# ── Main ─────────────────────────────────────
+main() {
+    header "Rubik OS Configuration Tool"
+
+    case "${1:-all}" in
+        audio)
+            configure_audio
+            ;;
+        bluetooth|bt)
+            configure_bluetooth
+            ;;
+        wifi|network|net)
+            configure_wifi
+            ;;
+        gpu)
+            configure_gpu
+            ;;
+        power)
+            configure_power
+            ;;
+        printing|print|cups)
+            configure_printing
+            ;;
+        firewall)
+            configure_firewall
+            ;;
+        sysctl)
+            configure_sysctl
+            ;;
+        user)
+            configure_user "${2:-}"
+            ;;
+        all)
+            configure_all "${2:-}"
+            ;;
+        help|--help|-h)
+            echo "Usage: rubik-configure [component] [user]"
+            echo ""
+            echo "Components:"
+            echo "  all           Configure everything (default)"
+            echo "  audio         PipeWire + WirePlumber"
+            echo "  bluetooth     Bluez + audio sink"
+            echo "  wifi          iwd + NetworkManager"
+            echo "  gpu           Auto-detect and configure GPU"
+            echo "  power         TLP + thermald"
+            echo "  printing      CUPS"
+            echo "  firewall      UFW (default deny)"
+            echo "  sysctl        Kernel parameters"
+            echo "  user [name]   User groups + river config"
+            echo ""
+            echo "Example:"
+            echo "  rubik-configure all rubik"
+            echo "  rubik-configure audio"
+            echo "  rubik-configure user juan"
+            ;;
+        *)
+            error "Unknown component: $1"
+            exit 1
+            ;;
+    esac
+
+    log "Configuration complete"
+}
+
+main "$@"

@@ -1,0 +1,14 @@
+[Unit]
+Description=Rubik OS WiFi Service
+Documentation=https://rubik-os.org/docs/wifi
+After=network.target
+
+[Service]
+Type=notify
+ExecStartPre=/usr/bin/iwctl device list
+ExecStart=/usr/lib/systemd/systemd-networkd-wait-online
+Restart=on-failure
+MemoryMax=64M
+
+[Install]
+WantedBy=rubik.target

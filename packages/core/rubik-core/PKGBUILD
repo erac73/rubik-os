@@ -79,10 +79,19 @@ source=(
     "firejail.sh::../../iso/airootfs/usr/lib/rubik/cells/firejail.sh"
     "update-auth.sh::../../iso/airootfs/usr/lib/rubik/cells/update-auth.sh"
     "cell-isolation.sh::../../iso/airootfs/usr/lib/rubik/cells/cell-isolation.sh"
+    "bluetooth.sh::../../iso/airootfs/usr/lib/rubik/cells/bluetooth.sh"
+    "pipewire.sh::../../iso/airootfs/usr/lib/rubik/cells/pipewire.sh"
+    "display-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/display-manager.sh"
+    "wifi-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/wifi-manager.sh"
     "rubikd.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service"
     "rubik-cell@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service"
     "rubik-face@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service"
     "rubik.target::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik.target"
+    "rubik-bluetooth.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-bluetooth.service"
+    "rubik-pipewire.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-pipewire.service"
+    "rubik-wireplumber.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-wireplumber.service"
+    "rubik-wifi.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-wifi.service"
+    "rubik-configure::../../scripts/rubik-configure"
     "rubik-network::../../scripts/rubik-network"
     "rubik-recovery::../../scripts/rubik-recovery"
     "rubik-bench::../../scripts/rubik-bench"
@@ -116,7 +125,8 @@ package() {
                  fs-layout cache-io dedup proxy-tun net-monitor bandwidth-limiter
                  wm-core bar-status launcher terminal compositor notifier wallpaper
                  clipboard idle-manager sandbox-exec crypto integrity firejail
-                 update-auth cell-isolation)
+                 update-auth cell-isolation
+                 bluetooth pipewire display-manager wifi-manager)
     for cell in "${cells[@]}"; do
         install -Dm755 "$srcdir/${cell}.sh" \
             "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
@@ -131,8 +141,18 @@ package() {
         "$pkgdir/usr/lib/systemd/system/rubik-face@.service"
     install -Dm644 "$srcdir/rubik.target" \
         "$pkgdir/usr/lib/systemd/system/rubik.target"
+    install -Dm644 "$srcdir/rubik-bluetooth.service" \
+        "$pkgdir/usr/lib/systemd/system/rubik-bluetooth.service"
+    install -Dm644 "$srcdir/rubik-pipewire.service" \
+        "$pkgdir/usr/lib/systemd/system/rubik-pipewire.service"
+    install -Dm644 "$srcdir/rubik-wireplumber.service" \
+        "$pkgdir/usr/lib/systemd/system/rubik-wireplumber.service"
+    install -Dm644 "$srcdir/rubik-wifi.service" \
+        "$pkgdir/usr/lib/systemd/system/rubik-wifi.service"
 
     # Utility scripts
+    install -Dm755 "$srcdir/rubik-configure" \
+        "$pkgdir/usr/bin/rubik-configure"
     install -Dm755 "$srcdir/rubik-network" \
         "$pkgdir/usr/bin/rubik-network"
     install -Dm755 "$srcdir/rubik-recovery" \

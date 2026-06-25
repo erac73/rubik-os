@@ -1,0 +1,18 @@
+[Unit]
+Description=Rubik OS WirePlumber Session Manager
+Documentation=https://rubik-os.org/docs/audio
+After=rubik-pipewire.service
+Requires=rubik-pipewire.service
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/wireplumber
+Restart=on-failure
+RestartSec=2
+MemoryMax=64M
+CPUAccounting=yes
+MemoryAccounting=yes
+
+[Install]
+WantedBy=rubik.target

@@ -1,0 +1,22 @@
+[Unit]
+Description=Rubik OS Bluetooth Service
+Documentation=https://rubik-os.org/docs/bluetooth
+After=rubikd.service
+Requires=rubikd.service
+
+[Service]
+Type=dbus
+BusName=org.bluez
+ExecStart=/usr/lib/bluetooth/bluetoothd
+ExecReload=/usr/bin/bluetoothctl power off; /usr/bin/bluetoothctl power on
+Restart=on-failure
+RestartSec=5
+MemoryMax=64M
+CPUAccounting=yes
+MemoryAccounting=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=rubik.target

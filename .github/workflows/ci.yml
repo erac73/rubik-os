@@ -90,9 +90,14 @@ jobs:
             iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service \
             iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service \
             iso/airootfs/usr/lib/systemd/rubik-services/rubik.target \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik-bluetooth.service \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik-pipewire.service \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik-wireplumber.service \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik-wifi.service \
             scripts/rubik-network \
             scripts/rubik-recovery \
             scripts/rubik-bench \
+            scripts/rubik-configure \
             iso/airootfs/etc/apparmor.d/rubik/rubik-cell \
             iso/airootfs/etc/apparmor.d/rubik/rubik-cell-network \
             iso/airootfs/etc/apparmor.d/rubik/rubik-cell-security \

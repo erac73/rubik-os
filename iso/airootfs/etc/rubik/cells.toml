@@ -269,6 +269,22 @@ unit = "chronyd"
 depends = ["F3.0"]
 order = 8
 
+[cell.F3.9]
+name = "bluetooth"
+type = "script"
+exec = "/usr/lib/rubik/cells/bluetooth.sh"
+depends = ["F0.0"]
+optional = true
+order = 9
+
+[cell.F3.10]
+name = "wifi-manager"
+type = "script"
+exec = "/usr/lib/rubik/cells/wifi-manager.sh"
+depends = ["F3.0"]
+optional = true
+order = 10
+
 # ── Face 4 — UI ─────────────────────────────────
 
 [cell.F4.0]
@@ -334,6 +350,21 @@ type = "script"
 exec = "/usr/lib/rubik/cells/idle-manager.sh"
 depends = ["F4.0"]
 order = 8
+
+[cell.F4.9]
+name = "pipewire"
+type = "script"
+exec = "/usr/lib/rubik/cells/pipewire.sh"
+depends = ["F0.0"]
+order = 9
+
+[cell.F4.10]
+name = "display-manager"
+type = "script"
+exec = "/usr/lib/rubik/cells/display-manager.sh"
+depends = ["F4.0"]
+optional = true
+order = 10
 
 # ── Face 5 — Security ───────────────────────────
 

@@ -204,13 +204,13 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 
 ## Estado del proyecto
 
-| Componente | v0.5 |
+| Componente | v0.7 |
 |---|---|---|
-| Scripts de celda | **32/32** (100% — implementaciones reales, no stubs) |
+| Scripts de celda | **36** (32 originales + bluetooth, pipewire, display-manager, wifi-manager) |
 | Scripts de cara | **6/6** (100%) |
-| Systemd units | **4** (rubikd, rubik-cell@, rubik-face@, rubik.target) |
+| Systemd units | **8** (rubikd, rubik-cell@, rubik-face@, rubik.target, rubik-bluetooth, rubik-pipewire, rubik-wireplumber, rubik-wifi) |
 | AppArmor profiles | **3** (rubik-cell, rubik-cell-network, rubik-cell-security) |
-| Scripts de sistema | **rubik-network**, **rubik-recovery**, **rubik-bench** |
+| Scripts de sistema | **rubik-network**, **rubik-recovery**, **rubik-bench**, **rubik-configure** |
 | Orquestador | daemon mode, bootstrap, validate, health checks, shutdown |
 | Tests | **30+** tests bats |
 | CI/CD | GitHub Actions (shellcheck, validación, tests, integridad) |
@@ -220,6 +220,15 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 | QEMU test | `scripts/qemu-test.sh` para booteo UEFI/BIOS |
 | Recovery | `rubik-recovery` con rollback, snapshot, fsck, fallback, initramfs |
 | Benchmarks | `rubik-bench` (ZRAM, memoria, CPU, disco) |
+| Post-install | `rubik-configure` (audio, BT, WiFi, GPU, power, printing, firewall) |
+| Audio | PipeWire + WirePlumber + ALSA |
+| Bluetooth | Bluez + cell script |
+| WiFi | iwd + NetworkManager + wpa_supplicant |
+| GPU | AMD/Intel/NVIDIA auto-detect |
+| GNU Toolchain | gcc, make, autoconf, automake, binutils, glibc, python, go, rust |
+| Firmware | linux-firmware, amd-ucode, intel-ucode, sof-firmware |
+| Desktop | river, waybar, rofi, foot, dunst, swaybg, swaylock |
+| Impresión | CUPS + HPLIP + SANE |
 | Licencia | GPLv3 |
 
 Próximo: v1.0.0
