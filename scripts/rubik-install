@@ -59,15 +59,21 @@ partition_disk() {
     lsblk -d -o NAME,SIZE,TYPE,MOUNTPOINT | grep -v loop
     echo ""
 
-    read -rp "  Install to (e.g., /dev/sda): " DISK_DEV
+    if [[ -z "$DISK_DEV" ]]; then
+        read -rp "  Install to (e.g., /dev/sda): " DISK_DEV
+    fi
     if [[ ! -b "$DISK_DEV" ]]; then
         error "Not a block device: $DISK_DEV"
         return 1
     fi
 
-    warn "This will ERASE ALL DATA on $DISK_DEV"
-    read -rp "  Continue? (yes/no): " confirm
-    [[ "$confirm" != "yes" ]] && { error "Aborted"; return 1; }
+    if $NONINTERACTIVE; then
+        warn "Installing to $DISK_DEV (non-interactive)"
+    else
+        warn "This will ERASE ALL DATA on $DISK_DEV"
+        read -rp "  Continue? (yes/no): " confirm
+        [[ "$confirm" != "yes" ]] && { error "Aborted"; return 1; }
+    fi
 
     log "Partitioning $DISK_DEV..."
 
@@ -223,8 +229,28 @@ CHROOT
     log "System configured"
 }
 
+# ── Non-interactive mode ────────────────────────
+NONINTERACTIVE=false
+DISK_DEV=""
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --yes|-y) NONINTERACTIVE=true ;;
+            --disk=*) DISK_DEV="${1#*=}" ;;
+            --help|-h)
+                echo "Usage: rubik-install [--yes] [--disk=/dev/sda]"
+                exit 0
+                ;;
+        esac
+        shift
+    done
+}
+
 # ── Main ───────────────────────────────────────
 main() {
+    parse_args "$@"
+
     cat << "EOF"
 ╔═══════════════════════════════════════════╗
 ║       Rubik OS Installer v0.1             ║
@@ -233,6 +259,9 @@ main() {
 EOF
 
     detect_hardware
+    if $NONINTERACTIVE && [[ -n "$DISK_DEV" ]]; then
+        log "Non-interactive mode: installing to $DISK_DEV"
+    fi
     partition_disk
     format_filesystems
     create_subvolumes

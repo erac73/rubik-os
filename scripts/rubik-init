@@ -117,8 +117,8 @@ welcome() {
   Each cell runs in isolation.
   Nothing is wasted.
 
-  Documentation: https://rubik-os.org/docs
-  Report issues: https://github.com/rubik-os/issues
+  Documentation: https://github.com/erac73/rubik-os
+  Report issues: https://github.com/erac73/rubik-os/issues
 EOF
 }
 

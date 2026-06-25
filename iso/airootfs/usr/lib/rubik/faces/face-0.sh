@@ -12,6 +12,12 @@ log() { echo "[$LOG_TAG] $1"; }
 
 # ── F0.1: ZRAM Setup ──────────────────────────
 setup_zram() {
+    # Skip if ZRAM already active (e.g., from zram-udev.sh)
+    if grep -q "zram0" /proc/swaps 2>/dev/null; then
+        log "ZRAM already active, skipping"
+        return 0
+    fi
+
     local total_ram
     total_ram=$(awk '/MemTotal/{print $2}' /proc/meminfo)
     local zram_size=$((total_ram * 75 / 100))  # 75% of RAM for ZRAM

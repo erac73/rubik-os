@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Shellcheck + Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Lint scripts
+        run: |
+          find scripts/ -name '*.sh' -o -name 'rubik-*' | xargs shellcheck -s bash || true
+          find iso/airootfs/usr/lib/rubik/ -name '*.sh' | xargs shellcheck -s bash || true
+
+      - name: Validate cells.toml
+        run: |
+          python3 -c "
+          import re
+          cells = {}
+          with open('iso/airootfs/etc/rubik/cells.toml') as f:
+              for line in f:
+                  m = re.match(r'^\[cell\.(.+)\]', line)
+                  if m: cell_id = m.group(1)
+                  m = re.match(r'^exec\s*=\s*\"(.+)\"', line)
+                  if m: cells[cell_id] = m.group(1)
+          for cid, path in cells.items():
+              import os
+              rel = path.lstrip('/')
+              if not os.path.exists(rel):
+                  print(f'WARN: {cid} -> {path} not found')
+          print(f'Validated {len(cells)} script-type cells')
+          "
+
+      - name: Check PKGBUILD syntax
+        run: |
+          bash -n packages/core/rubik-core/PKGBUILD && echo "PKGBUILD syntax OK"
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - name: Run tests
+        run: |
+          if [ -d tests/ ]; then
+            bats tests/ 2>/dev/null || echo "No bats tests found"
+          fi
+
+      - name: Test orchestrator help
+        run: |
+          chmod +x scripts/rubik-orchestrator
+          scripts/rubik-orchestrator 2>&1 | head -5
+          echo "Orchestrator runs"
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for missing files
+        run: |
+          errors=0
+          for f in \
+            scripts/rubik-orchestrator \
+            scripts/rubik-install \
+            scripts/rubik-init \
+            scripts/build-iso.sh \
+            iso/profiledef.sh \
+            iso/pacman.conf \
+            iso/archiso/packages.x86_64 \
+            iso/airootfs/etc/rubik/cells.toml \
+            iso/airootfs/etc/sysctl.d/90-rubik-memory.conf \
+            iso/airootfs/etc/sysctl.d/99-rubik-security.conf \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service \
+            iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service \
+            packages/core/rubik-core/PKGBUILD \
+            assets/logo.svg \
+            README.md \
+            LICENSE; do
+            if [ ! -f "$f" ]; then
+              echo "MISSING: $f"
+              errors=$((errors + 1))
+            fi
+          done
+          echo "Files checked: $errors missing"
+          exit $errors

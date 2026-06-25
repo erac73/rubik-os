@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ───────────────────────────────────────────────
-# ZRAM udev helper — calculates ZRAM size dynamically
+# ZRAM udev helper — fallback if face-0 hasn't run
 # Called by udev rule 99-rubik-zram.rules
 # ───────────────────────────────────────────────
 set -euo pipefail
@@ -8,6 +8,11 @@ set -euo pipefail
 ZRAM_DEV="${1:-/dev/zram0}"
 
 if [[ ! -e "$ZRAM_DEV" ]]; then
+    exit 0
+fi
+
+# Skip if face-0.sh already configured ZRAM as swap
+if grep -q "zram0" /proc/swaps 2>/dev/null; then
     exit 0
 fi
 
