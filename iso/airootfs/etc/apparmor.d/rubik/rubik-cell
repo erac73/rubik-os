@@ -1,0 +1,63 @@
+# ------------------------------------------------------------------
+# AppArmor profile for Rubik OS cells (template)
+# Each cell runs under this profile for mandatory access control.
+# Profile is dynamically tuned per cell via subprofiles or
+# attachment based on the binary name.
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+profile rubik-cell /usr/lib/rubik/cells/*.sh {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+
+  # Cell scripts directory - read/execute only
+  /usr/lib/rubik/cells/           r,
+  /usr/lib/rubik/cells/*.sh       rix,
+
+  # Face scripts
+  /usr/lib/rubik/faces/           r,
+  /usr/lib/rubik/faces/*.sh       rix,
+
+  # Runtime directories
+  /run/rubik/                     rw,
+  /run/rubik/**                   rwk,
+
+  # Logging
+  /var/log/rubik/                 rw,
+  /var/log/rubik/**               rw,
+
+  # Configuration
+  /etc/rubik/                     r,
+  /etc/rubik/**                   r,
+
+  # System access (read-only)
+  /proc/sys/**                    r,
+  /sys/block/**                   r,
+  /sys/devices/**                 r,
+  /sys/fs/cgroup/                 r,
+  /sys/fs/cgroup/**               rw,
+
+  # Memory info
+  /proc/meminfo                   r,
+  /proc/pressure/                 r,
+  /proc/pressure/**               r,
+  /proc/swaps                     r,
+  /proc/sys/vm/**                 rw,
+
+  # Swap management
+  /dev/zram0                      rw,
+  /dev/zram*                      rw,
+
+  # Deny risky operations
+  deny /etc/shadow                r,
+  deny /etc/gshadow               r,
+  deny /etc/ssh/**                r,
+  deny /root/**                   r,
+  deny /home/**                   r,
+  deny capability sys_admin,
+  deny capability sys_module,
+  deny capability sys_rawio,
+  deny capability net_admin,
+  deny capability net_raw,
+}

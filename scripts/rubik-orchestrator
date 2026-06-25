@@ -263,11 +263,45 @@ main() {
             esac
             ;;
         bootstrap)
-            log "Bootstrap mode: starting all cells in order"
+            log "Bootstrap: starting all cells in dependency order"
+            local started=0 failed=0
+            # Sort by order field from cells.toml
+            local sorted
+            sorted=$(_orch_read_toml 2>/dev/null | sort -n | awk '{print $2}') || true
+            if [[ -z "$sorted" ]]; then
+                sorted=$(ls "$RUBIK_ROOT/cells/"*.sh 2>/dev/null | xargs -n1 basename -s .sh)
+            fi
+            for cell_id in $sorted; do
+                local cell_name
+                cell_name=$(echo "$cell_id" | sed 's/.*\.//')
+                local cell_file="$RUBIK_ROOT/cells/$cell_name.sh"
+                if [[ -f "$cell_file" ]]; then
+                    if _orch_cell_start "$cell_name" 2>/dev/null; then
+                        started=$((started + 1))
+                    else
+                        failed=$((failed + 1))
+                    fi
+                fi
+            done
+            log "Bootstrap complete: $started started, $failed failed"
             _orch_health_check
             ;;
+        daemon)
+            log "Daemon mode: monitoring cells every 30s"
+            local interval="${2:-30}"
+            while true; do
+                _orch_health_check
+                sleep "$interval"
+            done
+            ;;
         shutdown)
-            log "Shutdown: all cells stopped"
+            log "Shutdown: stopping all cells"
+            for cell_file in "$RUBIK_ROOT/cells/"*.sh; do
+                local cell_name
+                cell_name="$(basename "$cell_file" .sh)"
+                _orch_cell_stop "$cell_name" 2>/dev/null || true
+            done
+            log "Shutdown complete"
             ;;
         *)
             echo "Rubik OS Cell Orchestrator"
@@ -282,6 +316,9 @@ main() {
             echo "  rubikctl cell status <cell>  Check single cell status"
             echo "  rubikctl face rotate <face>  Rotate entire face"
             echo "  rubikctl face status <face>  Status of all cells in a face"
+            echo "  rubikctl bootstrap            Start all cells in dependency order"
+            echo "  rubikctl daemon [interval]    Run health checks in a loop (default 30s)"
+            echo "  rubikctl shutdown             Stop all cells"
             exit 1
             ;;
     esac

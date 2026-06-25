@@ -200,6 +200,25 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 
 ---
 
+## Estado del proyecto
+
+| Componente | v0.3 |
+|---|---|
+| Scripts de celda | **32/32** (100% de celdas tipo script) |
+| Scripts de cara | **6/6** (100%) |
+| AppArmor profiles | **3** (rubik-cell, rubik-cell-network, rubik-cell-security) |
+| Orquestador | daemon mode, bootstrap, validate, health checks |
+| Tests | **15** tests bats |
+| CI/CD | GitHub Actions (shellcheck, validación, tests) |
+| Instalador | Interactivo + `--yes --disk=/dev/sda` |
+| Logging | rsyslog + logrotate por face |
+| Shell completion | bash (rubikctl + rubikd) |
+| Licencia | GPLv3 |
+
+Próximo: ISO booteable → v1.0.0
+
+---
+
 ## Licencia
 
 **GNU General Public License v3.0** — Software libre para todos.

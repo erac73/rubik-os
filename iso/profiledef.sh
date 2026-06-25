@@ -57,6 +57,11 @@ file_permissions=(
   ["/usr/lib/rubik/cells/firejail.sh"]="0:0:755"
   ["/usr/lib/rubik/cells/update-auth.sh"]="0:0:755"
   ["/usr/lib/rubik/cells/cell-isolation.sh"]="0:0:755"
+  ["/etc/apparmor.d/rubik/rubik-cell"]="0:0:644"
+  ["/etc/apparmor.d/rubik/rubik-cell-network"]="0:0:644"
+  ["/etc/apparmor.d/rubik/rubik-cell-security"]="0:0:644"
+  ["/etc/rsyslog.d/30-rubik.conf"]="0:0:644"
+  ["/etc/logrotate.d/rubik"]="0:0:644"
   ["/root"]="0:0:750"
   ["/root/.automated_script.sh"]="0:0:755"
 )

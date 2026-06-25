@@ -1,0 +1,17 @@
+# Rubik OS log rotation
+/var/log/rubik/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    maxsize 10M
+    dateext
+    dateformat -%Y%m%d
+    sharedscripts
+    postrotate
+        systemctl kill -s USR1 rubikd.service 2>/dev/null || true
+    endscript
+}

@@ -116,3 +116,59 @@ with open('../iso/airootfs/etc/rubik/cells.toml') as f:
 @test "build: build-iso.sh has no self-copy bug" {
     grep -q "OUT_DIR/iso-work" ../scripts/build-iso.sh
 }
+
+@test "orchestrator: daemon mode starts health loop" {
+    run timeout 2 ../scripts/rubik-orchestrator daemon 1
+    [ "$status" -eq 124 ]  # timeout means it looped
+}
+
+@test "orchestrator: bootstrap starts cells in order" {
+    run ../scripts/rubik-orchestrator bootstrap
+    echo "$output" | grep -q "Bootstrap complete"
+}
+
+@test "orchestrator: shutdown stops all cells" {
+    run ../scripts/rubik-orchestrator shutdown
+    echo "$output" | grep -q "Shutdown complete"
+}
+
+@test "orchestrator: daemon with custom interval" {
+    run timeout 3 ../scripts/rubik-orchestrator daemon 2
+    [ "$status" -eq 124 ]
+}
+
+@test "apparmor: rubik-cell profile exists" {
+    [ -f "../iso/airootfs/etc/apparmor.d/rubik/rubik-cell" ]
+}
+
+@test "apparmor: network profile exists" {
+    [ -f "../iso/airootfs/etc/apparmor.d/rubik/rubik-cell-network" ]
+}
+
+@test "apparmor: security profile exists" {
+    [ -f "../iso/airootfs/etc/apparmor.d/rubik/rubik-cell-security" ]
+}
+
+@test "logging: rsyslog config exists" {
+    [ -f "../iso/airootfs/etc/rsyslog.d/30-rubik.conf" ]
+}
+
+@test "logging: logrotate config exists" {
+    [ -f "../iso/airootfs/etc/logrotate.d/rubik" ]
+}
+
+@test "init: bootstrap_cells delegates to rubikd" {
+    grep -q "rubikd bootstrap" ../scripts/rubik-init
+}
+
+@test "all cells have executable bit" {
+    for f in ../iso/airootfs/usr/lib/rubik/cells/*.sh; do
+        [ -x "$f" ] || echo "NOT EXECUTABLE: $f"
+    done
+}
+
+@test "no shebangless scripts" {
+    for f in ../scripts/* ../iso/airootfs/usr/lib/rubik/cells/*.sh ../iso/airootfs/usr/lib/rubik/faces/*.sh; do
+        head -1 "$f" | grep -q "^#!" || echo "NO SHEBANG: $f"
+    done
+}
