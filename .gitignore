@@ -1,0 +1,22 @@
+# Build artifacts
+out/
+work/
+pkg/
+src/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+
+# Script output
+*.log

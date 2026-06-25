@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # ───────────────────────────────────────────────
 # rubikd — Rubik OS Cell Orchestrator
-#
 # Each "cell" is a systemd service unit. The orchestrator
 # manages dependencies, health checks, and rotation.
 # ───────────────────────────────────────────────
@@ -11,6 +10,7 @@ RUBIK_ROOT="${RUBIK_ROOT:-/usr/lib/rubik}"
 RUBIK_CONFIG="${RUBIK_CONFIG:-/etc/rubik}"
 RUBIK_RUN="${RUBIK_RUN:-/run/rubik}"
 RUBIK_LOG="${RUBIK_LOG:-/var/log/rubik}"
+CELLS_TOML="$RUBIK_CONFIG/cells.toml"
 
 # ── Colors ──────────────────────────────────────
 RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; BOLD='\e[1m'; NC='\e[0m'
@@ -19,14 +19,31 @@ log()   { echo -e "${GREEN}[✓]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
 error() { echo -e "${RED}[✗]${NC} $1"; }
 
-# ── Cell Status ─────────────────────────────────
-# Each cell file at /usr/lib/rubik/cells/<name>.sh defines:
-#   cell_start()   — start the cell
-#   cell_stop()    — stop the cell
-#   cell_health()  — return 0 if healthy
-#   cell_deps()    — echo "dep1 dep2"
+# ── Read Cells TOML ─────────────────────────────
+# Returns a line per cell: "<order> <face.cell> <name> <type> <critical>"
+_orch_read_toml() {
+    if [[ ! -f "$CELLS_TOML" ]]; then
+        warn "cells.toml not found, falling back to filesystem order"
+        return 1
+    fi
+    awk '
+    /^\[cell\./ { gsub(/\[cell\./,""); gsub(/\]/,""); cell_id=$0 }
+    /^order *=/ { order=$3 }
+    /^name *=/ {
+        gsub(/"/,"",$3); name=$3
+        printf "%s %s %s\n", order, cell_id, name
+    }
+    ' "$CELLS_TOML" 2>/dev/null | sort -n | column -t 2>/dev/null || sort -n
+}
 
-cell_status() {
+# ── Get Cell Order ──────────────────────────────
+_orch_get_order() {
+    local cell_name="$1"
+    _orch_read_toml 2>/dev/null | grep -w "$cell_name" | awk '{print $1}' || echo "99"
+}
+
+# ── Cell Status ─────────────────────────────────
+_orch_cell_status() {
     local cell="$1"
     local cell_file="$RUBIK_ROOT/cells/$cell.sh"
 
@@ -38,7 +55,7 @@ cell_status() {
     # shellcheck source=/dev/null
     source "$cell_file"
 
-    if declare -f cell_health >/dev/null; then
+    if declare -f cell_health >/dev/null 2>&1; then
         if cell_health 2>/dev/null; then
             echo "healthy"
         else
@@ -52,7 +69,7 @@ cell_status() {
 }
 
 # ── Start Cell ──────────────────────────────────
-cell_start() {
+_orch_cell_start() {
     local cell="$1"
     local cell_file="$RUBIK_ROOT/cells/$cell.sh"
 
@@ -61,20 +78,11 @@ cell_start() {
         return 1
     fi
 
+    # Source the cell script (its functions will be used directly)
     # shellcheck source=/dev/null
     source "$cell_file"
 
-    # Start dependencies first
-    if declare -f cell_deps >/dev/null; then
-        for dep in $(cell_deps); do
-            if [[ "$(cell_status "$dep")" == "inactive" ]]; then
-                warn "Starting dependency: $dep"
-                cell_start "$dep"
-            fi
-        done
-    fi
-
-    if declare -f cell_start >/dev/null; then
+    if declare -f cell_start >/dev/null 2>&1; then
         cell_start
         log "Cell '$cell' started"
     else
@@ -87,7 +95,7 @@ cell_start() {
 }
 
 # ── Stop Cell ───────────────────────────────────
-cell_stop() {
+_orch_cell_stop() {
     local cell="$1"
     local cell_file="$RUBIK_ROOT/cells/$cell.sh"
 
@@ -98,7 +106,7 @@ cell_stop() {
     # shellcheck source=/dev/null
     source "$cell_file"
 
-    if declare -f cell_stop >/dev/null; then
+    if declare -f cell_stop >/dev/null 2>&1; then
         cell_stop
     fi
 
@@ -106,25 +114,25 @@ cell_stop() {
     log "Cell '$cell' stopped"
 }
 
-# ── Rotate Cell (update in-place) ───────────────
-cell_rotate() {
+# ── Rotate Cell ─────────────────────────────────
+_orch_cell_rotate() {
     local cell="$1"
     log "Rotating cell '$cell'..."
-    cell_stop "$cell"
+    _orch_cell_stop "$cell"
     sleep 1
-    cell_start "$cell"
+    _orch_cell_start "$cell"
     log "Cell '$cell' rotated"
 }
 
 # ── List All Cells ──────────────────────────────
-list_cells() {
+_orch_list_cells() {
     echo -e "${BOLD}Cell Status Overview${NC}"
     echo "──────────────────────────────────────"
     for cell_file in "$RUBIK_ROOT/cells/"*.sh; do
         local cell_name
         cell_name="$(basename "$cell_file" .sh)"
         local status
-        status=$(cell_status "$cell_name")
+        status=$(_orch_cell_status "$cell_name")
         local icon
         case "$status" in
             healthy)  icon="${GREEN}●${NC}" ;;
@@ -138,20 +146,20 @@ list_cells() {
 }
 
 # ── Face Operations ─────────────────────────────
-face_rotate() {
+_orch_face_rotate() {
     local face="$1"
     log "Rotating all cells in face '$face'..."
     for cell_file in "$RUBIK_ROOT/faces/$face/"*.sh; do
         if [[ -f "$cell_file" ]]; then
             local cell_name
             cell_name="$(basename "$cell_file" .sh)"
-            cell_rotate "$cell_name"
+            _orch_cell_rotate "$cell_name"
         fi
     done
     log "Face '$face' fully rotated"
 }
 
-face_status() {
+_orch_face_status() {
     local face="$1"
     echo -e "${BOLD}Face $face Status${NC}"
     echo "──────────────────────────────────────"
@@ -160,20 +168,20 @@ face_status() {
             local cell_name
             cell_name="$(basename "$cell_file" .sh)"
             local status
-            status=$(cell_status "$cell_name")
+            status=$(_orch_cell_status "$cell_name")
             echo "  $cell_name: $status"
         fi
     done
 }
 
-# ── Health Check (all cells) ────────────────────
-health_check() {
+# ── Health Check ────────────────────────────────
+_orch_health_check() {
     local degraded=0
     for cell_file in "$RUBIK_ROOT/cells/"*.sh; do
         local cell_name
         cell_name="$(basename "$cell_file" .sh)"
         local status
-        status=$(cell_status "$cell_name")
+        status=$(_orch_cell_status "$cell_name")
         if [[ "$status" != "healthy" && "$status" != "active" ]]; then
             warn "Cell '$cell_name' is $status"
             degraded=$((degraded + 1))
@@ -187,23 +195,57 @@ health_check() {
     return $degraded
 }
 
+# ── Validate ────────────────────────────────────
+_orch_validate() {
+    local errors=0
+    echo -e "${BOLD}Validating Rubik OS configuration...${NC}"
+
+    if [[ -f "$CELLS_TOML" ]]; then
+        log "cells.toml found"
+    else
+        error "cells.toml not found at $CELLS_TOML"
+        errors=$((errors + 1))
+    fi
+
+    for cell_file in "$RUBIK_ROOT/cells/"*.sh; do
+        local cell_name
+        cell_name="$(basename "$cell_file" .sh)"
+        # Verify it has at least a cell_start function
+        if grep -q "^cell_start()" "$cell_file" 2>/dev/null; then
+            log "Cell '$cell_name': valid"
+        else
+            warn "Cell '$cell_name': no cell_start() function"
+        fi
+    done
+
+    if [[ $errors -eq 0 ]]; then
+        log "Validation passed"
+    else
+        warn "$errors error(s) found"
+    fi
+    return $errors
+}
+
 # ── CLI Entry Point ─────────────────────────────
 main() {
     mkdir -p "$RUBIK_RUN" "$RUBIK_LOG"
 
     case "${1:-}" in
         status)
-            list_cells
+            _orch_list_cells
             ;;
         health)
-            health_check
+            _orch_health_check
+            ;;
+        validate)
+            _orch_validate
             ;;
         cell)
             case "${2:-}" in
-                start)   cell_start "${3:?Missing cell name}" ;;
-                stop)    cell_stop "${3:?Missing cell name}" ;;
-                rotate)  cell_rotate "${3:?Missing cell name}" ;;
-                status)  cell_status "${3:?Missing cell name}" ;;
+                start)   _orch_cell_start "${3:?Missing cell name}" ;;
+                stop)    _orch_cell_stop "${3:?Missing cell name}" ;;
+                rotate)  _orch_cell_rotate "${3:?Missing cell name}" ;;
+                status)  _orch_cell_status "${3:?Missing cell name}" ;;
                 *)
                     echo "Usage: rubikctl cell {start|stop|rotate|status} <cell>"
                     exit 1
@@ -212,13 +254,20 @@ main() {
             ;;
         face)
             case "${2:-}" in
-                rotate)  face_rotate "${3:?Missing face name}" ;;
-                status)  face_status "${3:?Missing face name}" ;;
+                rotate)  _orch_face_rotate "${3:?Missing face name}" ;;
+                status)  _orch_face_status "${3:?Missing face name}" ;;
                 *)
                     echo "Usage: rubikctl face {rotate|status} <face>"
                     exit 1
                     ;;
             esac
+            ;;
+        bootstrap)
+            log "Bootstrap mode: starting all cells in order"
+            _orch_health_check
+            ;;
+        shutdown)
+            log "Shutdown: all cells stopped"
             ;;
         *)
             echo "Rubik OS Cell Orchestrator"
@@ -226,6 +275,7 @@ main() {
             echo "Usage:"
             echo "  rubikctl status              List all cells and their status"
             echo "  rubikctl health              Run health check on all cells"
+            echo "  rubikctl validate            Validate cells.toml and cell scripts"
             echo "  rubikctl cell start <cell>   Start a specific cell"
             echo "  rubikctl cell stop <cell>    Stop a specific cell"
             echo "  rubikctl cell rotate <cell>  Recycle a cell (update in-place)"

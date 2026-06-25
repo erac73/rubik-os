@@ -45,21 +45,20 @@ check_prereqs() {
 prepare_iso_root() {
     header "Preparing ISO root filesystem"
 
-    local iso_root="$ISO_DIR/airootfs"
+    local work_root="$OUT_DIR/iso-work"
+    rm -rf "$work_root"
+    mkdir -p "$work_root"/{etc/rubik,usr/lib/rubik,usr/share/rubik}
 
-    # Create standard directories
-    mkdir -p "$iso_root"/{etc/rubik,usr/lib/rubik,usr/share/rubik}
-
-    # Copy Rubik configuration files
-    cp -r "$ISO_DIR/airootfs/etc/"* "$iso_root/etc/"
-    cp -r "$ISO_DIR/airootfs/usr/"* "$iso_root/usr/"
+    # Copy Rubik configuration from airootfs to work directory
+    cp -r "$ISO_DIR/airootfs/etc/"* "$work_root/etc/"
+    cp -r "$ISO_DIR/airootfs/usr/"* "$work_root/usr/"
 
     # Set correct permissions
-    chmod 755 "$iso_root/usr/lib/rubik/faces/"*
-    chmod 755 "$iso_root/usr/lib/rubik/cells/"*
-    chmod 644 "$iso_root/etc/rubik/"*
+    chmod 755 "$work_root/usr/lib/rubik/faces/"* 2>/dev/null || true
+    chmod 755 "$work_root/usr/lib/rubik/cells/"* 2>/dev/null || true
+    chmod 644 "$work_root/etc/rubik/"* 2>/dev/null || true
 
-    log "ISO root prepared at $iso_root"
+    log "ISO root prepared at $work_root"
 }
 
 # ── Build Packages ──────────────────────────────

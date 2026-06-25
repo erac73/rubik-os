@@ -50,6 +50,8 @@ detect_hardware() {
 }
 
 # ── Partition Disk ─────────────────────────────
+DISK_DEV=""   # Global: set by partition_disk, used by format & mount
+
 partition_disk() {
     header "Disk Partitioning"
 
@@ -57,41 +59,51 @@ partition_disk() {
     lsblk -d -o NAME,SIZE,TYPE,MOUNTPOINT | grep -v loop
     echo ""
 
-    read -rp "  Install to (e.g., /dev/sda): " disk_dev
-    if [[ ! -b "$disk_dev" ]]; then
-        error "Not a block device: $disk_dev"
+    read -rp "  Install to (e.g., /dev/sda): " DISK_DEV
+    if [[ ! -b "$DISK_DEV" ]]; then
+        error "Not a block device: $DISK_DEV"
         return 1
     fi
 
-    warn "This will ERASE ALL DATA on $disk_dev"
+    warn "This will ERASE ALL DATA on $DISK_DEV"
     read -rp "  Continue? (yes/no): " confirm
     [[ "$confirm" != "yes" ]] && { error "Aborted"; return 1; }
 
-    log "Partitioning $disk_dev..."
+    log "Partitioning $DISK_DEV..."
 
     # Create partition table (GPT)
-    parted -s "$disk_dev" mklabel gpt
+    parted -s "$DISK_DEV" mklabel gpt
 
     # EFI partition (512MB)
-    parted -s "$disk_dev" mkpart primary fat32 1MiB 513MiB
-    parted -s "$disk_dev" set 1 esp on
+    parted -s "$DISK_DEV" mkpart primary fat32 1MiB 513MiB
+    parted -s "$DISK_DEV" set 1 esp on
 
     # Boot partition (1GB)
-    parted -s "$disk_dev" mkpart primary ext4 513MiB 1537MiB
+    parted -s "$DISK_DEV" mkpart primary ext4 513MiB 1537MiB
 
     # Root partition (remaining)
-    parted -s "$disk_dev" mkpart primary btrfs 1537MiB 100%
+    parted -s "$DISK_DEV" mkpart primary btrfs 1537MiB 100%
 
     log "Partitioning complete"
+}
+
+# ── Partition suffix helper ─────────────────────
+_part_suffix() {
+    local dev="$DISK_DEV" num="$1"
+    if echo "$dev" | grep -q "nvme"; then
+        echo "${dev}p${num}"
+    else
+        echo "${dev}${num}"
+    fi
 }
 
 # ── Format Filesystems ─────────────────────────
 format_filesystems() {
     header "Formatting Filesystems"
 
-    local efi_part="${disk_dev}1"
-    local boot_part="${disk_dev}2"
-    local root_part="${disk_dev}3"
+    local efi_part=$(_part_suffix 1)
+    local boot_part=$(_part_suffix 2)
+    local root_part=$(_part_suffix 3)
 
     log "Formatting EFI partition ($efi_part)..."
     mkfs.fat -F32 "$efi_part"
@@ -130,8 +142,8 @@ create_subvolumes() {
 mount_partitions() {
     header "Mounting Partitions"
 
-    local efi_part="${disk_dev}1"
-    local boot_part="${disk_dev}2"
+    local efi_part=$(_part_suffix 1)
+    local boot_part=$(_part_suffix 2)
 
     mount -o noatime,compress=zstd:3,space_cache=v2,subvol=@ /dev/mapper/rubik-root /mnt
 
@@ -197,7 +209,8 @@ configure_system() {
         grub-mkconfig -o /boot/grub/grub.cfg
 
         # Enable services
-        systemctl enable NetworkManager
+        systemctl enable systemd-networkd
+        systemctl enable systemd-resolved
         systemctl enable iwd
         systemctl enable nftables
         systemctl enable chronyd

@@ -6,7 +6,7 @@
 
 pkgname=rubik-core
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Rubik OS core system — cell orchestrator and face definitions"
 arch=('x86_64')
 url="https://rubik-os.org"
@@ -19,82 +19,106 @@ depends=(
     'gawk'
     'grep'
     'sed'
+    'bc'
 )
 optdepends=(
     'earlyoom: OOM guard (F0.3)'
     'zram-generator: ZRAM management (F0.1)'
     'irqbalance: IRQ balancing (F0.6)'
     'chrony: NTP sync (F3.8)'
+    'duperemove: Block dedup (F2.5)'
+    'firejail: Sandboxing (F5.5)'
 )
 conflicts=()
 replaces=()
 source=(
-    "rubikd"
-    "rubikctl"
-    "cells.toml"
-    "faces/face-0.sh"
-    "faces/face-1.sh"
-    "faces/face-2.sh"
-    "faces/face-3.sh"
-    "faces/face-4.sh"
-    "faces/face-5.sh"
-    "cells/memory-compression.sh"
-    "cells/oom-guard.sh"
-    "cells/cache-tune.sh"
-    "cells/cpu-gov.sh"
+    "rubikd::../../scripts/rubik-orchestrator"
+    "rubikctl::../../scripts/rubik-orchestrator"
+    "cells.toml::../../iso/airootfs/etc/rubik/cells.toml"
+    "face-0.sh::../../iso/airootfs/usr/lib/rubik/faces/face-0.sh"
+    "face-1.sh::../../iso/airootfs/usr/lib/rubik/faces/face-1.sh"
+    "face-2.sh::../../iso/airootfs/usr/lib/rubik/faces/face-2.sh"
+    "face-3.sh::../../iso/airootfs/usr/lib/rubik/faces/face-3.sh"
+    "face-4.sh::../../iso/airootfs/usr/lib/rubik/faces/face-4.sh"
+    "face-5.sh::../../iso/airootfs/usr/lib/rubik/faces/face-5.sh"
+    "memory-compression.sh::../../iso/airootfs/usr/lib/rubik/cells/memory-compression.sh"
+    "zram-udev.sh::../../iso/airootfs/usr/lib/rubik/cells/zram-udev.sh"
+    "oom-guard.sh::../../iso/airootfs/usr/lib/rubik/cells/oom-guard.sh"
+    "swap-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/swap-manager.sh"
+    "hugepages.sh::../../iso/airootfs/usr/lib/rubik/cells/hugepages.sh"
+    "cache-tune.sh::../../iso/airootfs/usr/lib/rubik/cells/cache-tune.sh"
+    "cpu-gov.sh::../../iso/airootfs/usr/lib/rubik/cells/cpu-gov.sh"
+    "mem-forecast.sh::../../iso/airootfs/usr/lib/rubik/cells/mem-forecast.sh"
+    "cgroup-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/cgroup-manager.sh"
+    "sched-tune.sh::../../iso/airootfs/usr/lib/rubik/cells/sched-tune.sh"
+    "initramfs.sh::../../iso/airootfs/usr/lib/rubik/cells/initramfs.sh"
+    "fs-layout.sh::../../iso/airootfs/usr/lib/rubik/cells/fs-layout.sh"
+    "cache-io.sh::../../iso/airootfs/usr/lib/rubik/cells/cache-io.sh"
+    "dedup.sh::../../iso/airootfs/usr/lib/rubik/cells/dedup.sh"
+    "proxy-tun.sh::../../iso/airootfs/usr/lib/rubik/cells/proxy-tun.sh"
+    "net-monitor.sh::../../iso/airootfs/usr/lib/rubik/cells/net-monitor.sh"
+    "bandwidth-limiter.sh::../../iso/airootfs/usr/lib/rubik/cells/bandwidth-limiter.sh"
+    "wm-core.sh::../../iso/airootfs/usr/lib/rubik/cells/wm-core.sh"
+    "bar-status.sh::../../iso/airootfs/usr/lib/rubik/cells/bar-status.sh"
+    "launcher.sh::../../iso/airootfs/usr/lib/rubik/cells/launcher.sh"
+    "terminal.sh::../../iso/airootfs/usr/lib/rubik/cells/terminal.sh"
+    "compositor.sh::../../iso/airootfs/usr/lib/rubik/cells/compositor.sh"
+    "notifier.sh::../../iso/airootfs/usr/lib/rubik/cells/notifier.sh"
+    "wallpaper.sh::../../iso/airootfs/usr/lib/rubik/cells/wallpaper.sh"
+    "clipboard.sh::../../iso/airootfs/usr/lib/rubik/cells/clipboard.sh"
+    "idle-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/idle-manager.sh"
+    "sandbox-exec.sh::../../iso/airootfs/usr/lib/rubik/cells/sandbox-exec.sh"
+    "crypto.sh::../../iso/airootfs/usr/lib/rubik/cells/crypto.sh"
+    "integrity.sh::../../iso/airootfs/usr/lib/rubik/cells/integrity.sh"
+    "firejail.sh::../../iso/airootfs/usr/lib/rubik/cells/firejail.sh"
+    "update-auth.sh::../../iso/airootfs/usr/lib/rubik/cells/update-auth.sh"
+    "cell-isolation.sh::../../iso/airootfs/usr/lib/rubik/cells/cell-isolation.sh"
+    "rubikd.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service"
+    "rubik-cell@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service"
+    "90-rubik-memory.conf::../../iso/airootfs/etc/sysctl.d/90-rubik-memory.conf"
+    "99-rubik-security.conf::../../iso/airootfs/etc/sysctl.d/99-rubik-security.conf"
 )
-sha256sums=(
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-    'SKIP'
-)
+sha256sums=('SKIP')
 
 package() {
-    # Orchestrator
+    # Orchestrator (same script installed as both rubikd and rubikctl)
     install -Dm755 "$srcdir/rubikd" "$pkgdir/usr/bin/rubikd"
-    install -Dm755 "$srcdir/rubikctl" "$pkgdir/usr/bin/rubikctl"
+    ln -sf /usr/bin/rubikd "$pkgdir/usr/bin/rubikctl"
 
     # Configuration
     install -Dm644 "$srcdir/cells.toml" "$pkgdir/etc/rubik/cells.toml"
 
     # Faces
     for face in 0 1 2 3 4 5; do
-        install -Dm755 "$srcdir/faces/face-${face}.sh" \
+        install -Dm755 "$srcdir/face-${face}.sh" \
             "$pkgdir/usr/lib/rubik/faces/face-${face}.sh"
     done
 
     # Cells
-    install -Dm755 "$srcdir/cells/memory-compression.sh" \
-        "$pkgdir/usr/lib/rubik/cells/memory-compression.sh"
-    install -Dm755 "$srcdir/cells/oom-guard.sh" \
-        "$pkgdir/usr/lib/rubik/cells/oom-guard.sh"
-    install -Dm755 "$srcdir/cells/cache-tune.sh" \
-        "$pkgdir/usr/lib/rubik/cells/cache-tune.sh"
-    install -Dm755 "$srcdir/cells/cpu-gov.sh" \
-        "$pkgdir/usr/lib/rubik/cells/cpu-gov.sh"
+    local cells=(memory-compression zram-udev oom-guard swap-manager hugepages
+                 cache-tune cpu-gov mem-forecast cgroup-manager sched-tune initramfs
+                 fs-layout cache-io dedup proxy-tun net-monitor bandwidth-limiter
+                 wm-core bar-status launcher terminal compositor notifier wallpaper
+                 clipboard idle-manager sandbox-exec crypto integrity firejail
+                 update-auth cell-isolation)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" \
+            "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
 
     # Systemd services
-    install -Dm644 "$srcdir/../systemd/rubikd.service" \
+    install -Dm644 "$srcdir/rubikd.service" \
         "$pkgdir/usr/lib/systemd/system/rubikd.service"
-    install -Dm644 "$srcdir/../systemd/rubik-cell@.service" \
+    install -Dm644 "$srcdir/rubik-cell@.service" \
         "$pkgdir/usr/lib/systemd/system/rubik-cell@.service"
 
     # Sysctl
-    install -Dm644 "$srcdir/../sysctl/90-rubik-memory.conf" \
+    install -Dm644 "$srcdir/90-rubik-memory.conf" \
         "$pkgdir/usr/lib/sysctl.d/90-rubik-memory.conf"
+    install -Dm644 "$srcdir/99-rubik-security.conf" \
+        "$pkgdir/usr/lib/sysctl.d/99-rubik-security.conf"
 
     # Documentation
-    install -Dm644 "$srcdir/../README.md" \
+    install -Dm644 "$srcdir/../../README.md" \
         "$pkgdir/usr/share/doc/rubik/README.md"
 }
