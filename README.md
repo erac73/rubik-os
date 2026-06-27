@@ -14,6 +14,14 @@
 
 ---
 
+## About — English
+
+**Rubik OS** is an Arch Linux-based distribution optimized for low-memory hardware. It runs at **80-120 MB RAM idle** by reorganizing every component into independent cells — like the faces of a Rubik's Cube. Each cell has its own cgroup, AppArmor profile, and resource limits. Cells can be replaced at runtime without rebooting.
+
+Target: old laptops, single-board computers, VMs, and anyone who wants a lean, modular Linux.
+
+---
+
 ## Motivación
 
 Los sistemas operativos modernos desperdician memoria. Un Linux promedio usa **300-400 MB** en idle solo con el sistema base. Rubik OS demuestra que se puede tener un sistema completo, funcional y seguro usando **80-120 MB** — sin sacrificar capacidad.
@@ -101,12 +109,29 @@ ls -lh out/rubik-os-*.iso
 ./scripts/docker-build.sh
 ```
 
-### O instalar desde cero
+### Bootear desde USB
 
 ```bash
-# Bootear la ISO → ejecutar el instalador
-rubik-install
+# Una vez construida la ISO, grabarla en USB
+# Linux:
+dd if=out/rubik-os-*.iso of=/dev/sdX bs=4M status=progress && sync
+
+# Windows (usando Rufus):
+# 1. Seleccionar la ISO en out/
+# 2. Modo: "DD Image" (NO "ISO Image")
+# 3. Escribir
+
+# macOS:
+# sudo dd if=out/rubik-os-*.iso of=/dev/diskX bs=4m status=progress
 ```
+
+> **Importante**: Usar siempre modo **DD Image** (Rufus) o `dd` directo. El modo "ISO Image" no bootea correctamente.
+
+Una vez grabada:
+1. Conectar USB y reiniciar
+2. Bootear desde USB (F12/F2/F7/ESC según el equipo)
+3. Seleccionar **"Rubik OS Live"** en GRUB
+4. El sistema arranca en modo live → ejecutar `rubik-install` para instalar
 
 ### Gestionar el sistema
 
