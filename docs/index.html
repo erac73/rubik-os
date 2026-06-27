@@ -1,25 +1,28 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rubik OS — Optimizada para memoria. Arquitectura descentralizada.</title>
-  <meta name="description" content="Rubik OS es una distribución Linux basada en Arch optimizada para equipos con pocos recursos.">
+  <title>Rubik OS — Memory-optimized. Decentralized architecture.</title>
+  <meta name="description" content="Rubik OS is an Arch-based Linux distribution optimized for low-resource hardware. 80-120 MB RAM at idle.">
   <style>
     :root { --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff; --border: #30363d; --green: #3fb950; --orange: #d29922; --red: #f85149; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
-    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; position: relative; }
     header h1 { font-size: 2.5rem; color: #fff; }
     header p { font-size: 1.1rem; color: #8b949e; margin-top: 0.5rem; }
     .badges { margin: 1rem 0; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
     .badges img { height: 20px; }
     .logo { width: 120px; height: 120px; margin-bottom: 1rem; }
+    .lang-btn { position: absolute; top: 1rem; right: 1rem; background: #21262d; border: 1px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+    .lang-btn:hover { background: #30363d; }
     h2 { font-size: 1.5rem; color: #fff; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
     h3 { font-size: 1.2rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
     .card { background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
     .card.download { border-color: var(--green); }
+    .card.face { border-left: 4px solid var(--accent); }
     .btn { display: inline-block; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin: 0.25rem; cursor: pointer; }
     .btn-primary { background: #238636; color: #fff; }
     .btn-primary:hover { background: #2ea043; }
@@ -30,7 +33,7 @@
     pre code { background: none; padding: 0; }
     ul { padding-left: 1.5rem; }
     li { margin: 0.5rem 0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
     .stat { text-align: center; padding: 1rem; }
     .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--green); }
     .stat-label { font-size: 0.85rem; color: #8b949e; }
@@ -39,13 +42,30 @@
     .step::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; background: var(--accent); color: #fff; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
     footer { text-align: center; padding: 2rem 0; margin-top: 2rem; border-top: 1px solid var(--border); color: #8b949e; font-size: 0.85rem; }
     footer a { color: var(--accent); text-decoration: none; }
-    @media (max-width: 600px) { header h1 { font-size: 1.8rem; } .container { padding: 1rem; } }
+    .social { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; }
+    .social a { color: #8b949e; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+    .social a:hover { color: var(--accent); }
+    .social svg { width: 20px; height: 20px; fill: currentColor; }
+    .es { display: none; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--accent); }
+    .cell-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; }
+    .cell-item { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; }
+    .cell-item strong { color: #fff; }
+    .cell-item span { color: #8b949e; font-size: 0.85rem; }
+    .nav-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
+    .nav-links a { color: #8b949e; text-decoration: none; font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--accent); }
+    @media (max-width: 600px) { header h1 { font-size: 1.8rem; } .container { padding: 1rem; } .lang-btn { position: static; margin-top: 1rem; } }
   </style>
 </head>
 <body>
   <div class="container">
 
+    <!-- ===== HEADER ===== -->
     <header>
+      <button class="lang-btn" onclick="toggleLang()" id="langBtn">Español</button>
       <svg class="logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="8" width="240" height="240" rx="32" stroke="#58a6ff" stroke-width="4"/>
         <rect x="48" y="48" width="64" height="64" rx="8" fill="#58a6ff" opacity="0.8"/>
@@ -55,7 +75,8 @@
         <rect x="96" y="96" width="64" height="64" rx="8" fill="#c9d1d9" opacity="0.6"/>
       </svg>
       <h1>Rubik OS</h1>
-      <p>Optimizada para memoria. Arquitectura descentralizada. Inspirada en el Cubo Rubik.</p>
+      <p class="en">Memory-optimized. Decentralized architecture. Inspired by the Rubik's Cube.</p>
+      <p class="es">Optimizada para memoria. Arquitectura descentralizada. Inspirada en el Cubo Rubik.</p>
       <div class="badges">
         <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License GPLv3">
         <img src="https://img.shields.io/badge/Base-Arch_Linux-1793D1?logo=arch-linux&logoColor=white" alt="Arch Linux">
@@ -63,26 +84,49 @@
       </div>
     </header>
 
-    <section>
-      <h2>Descargar ISO</h2>
+    <!-- ===== NAV ===== -->
+    <nav class="nav-links">
+      <a href="#download" class="en">Download</a>
+      <a href="#download" class="es">Descargar</a>
+      <a href="#about" class="en">About</a>
+      <a href="#about" class="es">Acerca de</a>
+      <a href="#architecture" class="en">Architecture</a>
+      <a href="#architecture" class="es">Arquitectura</a>
+      <a href="#faces" class="en">Faces (F0-F5)</a>
+      <a href="#faces" class="es">Caras (F0-F5)</a>
+      <a href="#repo" class="en">Packages</a>
+      <a href="#repo" class="es">Paquetes</a>
+      <a href="#build" class="en">Build</a>
+      <a href="#build" class="es">Construir</a>
+    </nav>
+
+    <!-- ===== DOWNLOAD ===== -->
+    <section id="download">
+      <h2 class="en">Download ISO</h2>
+      <h2 class="es">Descargar ISO</h2>
       <div class="card download">
-        <p style="margin-bottom:1rem">Última versión estable — <strong>v1.0.0</strong> (2026-06-27)</p>
-        <p style="margin-bottom:1rem;color:#8b949e;font-size:0.9rem">ISO booteable UEFI. ~2.9 GB (comprimido: 2.8 GB en 2 partes).</p>
+        <p style="margin-bottom:1rem" class="en">Latest stable release — <strong>v1.0.0</strong> (2026-06-27)</p>
+        <p style="margin-bottom:1rem" class="es">Última versión estable — <strong>v1.0.0</strong> (2026-06-27)</p>
+        <p style="margin-bottom:1rem;color:#8b949e;font-size:0.9rem" class="en">UEFI-bootable ISO. ~2.9 GB (compressed: 2.8 GB in 2 parts).</p>
+        <p style="margin-bottom:1rem;color:#8b949e;font-size:0.9rem" class="es">ISO booteable UEFI. ~2.9 GB (comprimido: 2.8 GB en 2 partes).</p>
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
-          <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_aa" class="btn btn-primary">Parte 1 (1.9 GB)</a>
-          <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_ab" class="btn btn-primary">Parte 2 (918 MB)</a>
-          <a href="https://github.com/erac73/rubik-os/releases/tag/v1.0.0" class="btn btn-secondary">Ver Release</a>
+          <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_aa" class="btn btn-primary"><span class="en">Part 1 (1.9 GB)</span><span class="es">Parte 1 (1.9 GB)</span></a>
+          <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_ab" class="btn btn-primary"><span class="en">Part 2 (918 MB)</span><span class="es">Parte 2 (918 MB)</span></a>
+          <a href="https://github.com/erac73/rubik-os/releases/tag/v1.0.0" class="btn btn-secondary"><span class="en">View Release</span><span class="es">Ver Release</span></a>
         </div>
         <details style="margin-top:1rem">
-          <summary style="cursor:pointer;color:var(--accent);font-size:0.9rem">Reconstruir la ISO</summary>
+          <summary style="cursor:pointer;color:var(--accent);font-size:0.9rem" class="en">Reconstruct the ISO</summary>
+          <summary style="cursor:pointer;color:var(--accent);font-size:0.9rem" class="es">Reconstruir la ISO</summary>
           <pre><code>cat rubik-os-*.iso.xz.part_* > rubik-os-20260627-x86_64.iso.xz
 xz -d rubik-os-20260627-x86_64.iso.xz</code></pre>
         </details>
       </div>
     </section>
 
+    <!-- ===== WRITE TO USB ===== -->
     <section>
-      <h2>Grabar en USB</h2>
+      <h2 class="en">Write to USB</h2>
+      <h2 class="es">Grabar en USB</h2>
       <div class="card">
         <div class="steps">
           <div class="step">
@@ -91,7 +135,8 @@ xz -d rubik-os-20260627-x86_64.iso.xz</code></pre>
           </div>
           <div class="step">
             <strong>Windows (Rufus)</strong>
-            <p style="color:#8b949e;font-size:0.9rem">Seleccionar la ISO → Modo: <strong>"DD Image"</strong> (NO "ISO Image") → Escribir</p>
+            <p style="color:#8b949e;font-size:0.9rem" class="en">Select the ISO → Mode: <strong>"DD Image"</strong> (NOT "ISO Image") → Write</p>
+            <p style="color:#8b949e;font-size:0.9rem" class="es">Seleccionar la ISO → Modo: <strong>"DD Image"</strong> (NO "ISO Image") → Escribir</p>
           </div>
           <div class="step">
             <strong>macOS</strong>
@@ -101,55 +146,237 @@ xz -d rubik-os-20260627-x86_64.iso.xz</code></pre>
       </div>
     </section>
 
-    <section>
-      <h2>Repositorio de paquetes <code>[rubik]</code></h2>
+    <!-- ===== ABOUT ===== -->
+    <section id="about">
+      <h2 class="en">About Rubik OS</h2>
+      <h2 class="es">Acerca de Rubik OS</h2>
       <div class="card">
-        <p>Agregá el repo oficial de Rubik OS a tu <code>/etc/pacman.conf</code>:</p>
+        <p class="en">Rubik OS is an Arch-based Linux distribution that runs on <strong>80-120 MB RAM at idle</strong>. It reorganizes every component as an <strong>independent cell</strong> — like the faces of a Rubik's Cube — with its own cgroup, AppArmor profile, and resource limits.</p>
+        <p class="es">Rubik OS es una distribución Linux basada en Arch que funciona con <strong>80-120 MB RAM en idle</strong>. Reorganiza cada componente como una <strong>celda independiente</strong> — como las caras de un Cubo Rubik — con su propio cgroup, perfil AppArmor y límites de recursos.</p>
+        <div class="grid" style="margin-top:1.5rem">
+          <div class="stat"><div class="stat-value">80-120 MB</div><div class="stat-label" class="en">RAM idle (no GUI)</div><div class="stat-label" class="es">RAM idle (sin GUI)</div></div>
+          <div class="stat"><div class="stat-value">~80-150</div><div class="stat-label" class="en">Processes at idle</div><div class="stat-label" class="es">Procesos en idle</div></div>
+          <div class="stat"><div class="stat-value">58</div><div class="stat-label" class="en">Atomic cells</div><div class="stat-label" class="es">Celdas atómicas</div></div>
+          <div class="stat"><div class="stat-value">6</div><div class="stat-label" class="en">Faces (F0-F5)</div><div class="stat-label" class="es">Caras (F0-F5)</div></div>
+        </div>
+        <p style="margin-top:1rem;color:#8b949e" class="en">Ideal for old laptops, single-board computers, VMs, and anyone who wants a modular, efficient Linux.</p>
+        <p style="margin-top:1rem;color:#8b949e" class="es">Ideal para laptops viejas, single-board computers, VMs y cualquiera que quiera un Linux modular y eficiente.</p>
+      </div>
+
+      <h3 class="en">Expected Performance</h3>
+      <h3 class="es">Rendimiento Esperado</h3>
+      <div class="card">
+        <table>
+          <tr><th class="en">Metric</th><th class="es">Métrica</th><th>Standard Linux</th><th>Rubik OS</th><th class="en">Improvement</th><th class="es">Mejora</th></tr>
+          <tr><td class="en">RAM idle (no GUI)</td><td class="es">RAM idle (sin GUI)</td><td>~300-400 MB</td><td>~80-120 MB</td><td>60-70%</td></tr>
+          <tr><td class="en">RAM idle (with GUI)</td><td class="es">RAM idle (con GUI)</td><td>~800-1200 MB</td><td>~250-400 MB</td><td>55-65%</td></tr>
+          <tr><td class="en">Boot to shell</td><td class="es">Arranque a shell</td><td>~15-30s</td><td>~5-10s</td><td>50-65%</td></tr>
+          <tr><td class="en">Boot to GUI</td><td class="es">Arranque a GUI</td><td>~30-60s</td><td>~10-20s</td><td>55-65%</td></tr>
+          <tr><td class="en">Processes at idle</td><td class="es">Procesos en idle</td><td>~400-600</td><td>~80-150</td><td>60-75%</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== ARCHITECTURE ===== -->
+    <section id="architecture">
+      <h2 class="en">Architecture</h2>
+      <h2 class="es">Arquitectura</h2>
+
+      <div class="card">
+        <h3 class="en">The Rubik's Cube Model</h3>
+        <h3 class="es">El Modelo del Cubo Rubik</h3>
+        <p class="en">Rubik OS organizes the operating system as a Rubik's Cube: <strong>6 faces</strong>, each with <strong>9 cells</strong> (for F0-F4) or <strong>11 cells</strong> (F3), totaling <strong>58 atomic cells</strong>.</p>
+        <p class="es">Rubik OS organiza el sistema operativo como un Cubo Rubik: <strong>6 caras</strong>, cada una con <strong>9 celdas</strong> (F0-F4) u <strong>11 celdas</strong> (F3), totalizando <strong>58 celdas atómicas</strong>.</p>
+        <pre style="font-size:0.7rem;line-height:1.2">        ┌─────┬─────┬─────┐
+        │ F4  │ F4  │ F4  │  ← Face 4: UI / Experience
+        │ (0) │ (1) │ (2) │
+        ├─────┼─────┼─────┤
+        │ F4  │ F4  │ F4  │
+        │ (3) │ (4) │ (5) │
+        ├─────┼─────┼─────┤
+        │ F4  │ F4  │ F4  │
+        │ (6) │ (7) │ (8) │
+┌───────┼─────┼─────┼─────┼───────┬─────┬─────┬─────┐
+│ F5(0) │ F5  │ F5  │ F3  │ F3(0) │ F3  │ F3  │ F3  │
+│       │ (1) │ (2) │ (0) │       │ (1) │ (2) │ (3) │
+├───────┼─────┼─────┼─────┼───────┼─────┼─────┼─────┤
+│ F5(3) │ F5  │ F5  │ F3  │ F3(4) │ F3  │ F3  │ F3  │
+│       │ (4) │ (5) │ (4) │       │ (5) │ (6) │ (7) │
+├───────┼─────┼─────┼─────┼───────┼─────┼─────┼─────┤
+│ F5(6) │ F5  │ F5  │ F3  │ F3(8) │ F3  │ F3  │ F3  │
+│       │ (7) │ (8) │ (6) │       │ (9) │ (10)│ (11)│
+└───────┼─────┼─────┼─────┼───────┴─────┴─────┴─────┘
+        │ F2  │ F2  │ F2  │
+        │ (0) │ (1) │ (2) │
+        ├─────┼─────┼─────┤
+        │ F2  │ F2  │ F2  │
+        │ (3) │ (4) │ (5) │
+        ├─────┼─────┼─────┤
+        │ F2  │ F2  │ F2  │
+        │ (6) │ (7) │ (8) │
+        └─────┴─────┴─────┘
+               │ F1  │ F1  │ F1  │
+               │ (0) │ (1) │ (2) │
+               ├─────┼─────┼─────┤
+               │ F1  │ F1  │ F1  │
+               │ (3) │ (4) │ (5) │
+               ├─────┼─────┼─────┤
+               │ F1  │ F1  │ F1  │
+               │ (6) │ (7) │ (8) │
+               └─────┴─────┴─────┘
+                      │ F0  │ F0  │ F0  │
+                      │ (0) │ (1) │ (2) │
+                      ├─────┼─────┼─────┤
+                      │ F0  │ F0  │ F0  │
+                      │ (3) │ (4) │ (5) │
+                      ├─────┼─────┼─────┤
+                      │ F0  │ F0  │ F0  │
+                      │ (6) │ (7) │ (8) │
+                      └─────┴─────┴─────┘</pre>
+      </div>
+
+      <div class="card">
+        <h3 class="en">Architectural Principles</h3>
+        <h3 class="es">Principios Arquitectónicos</h3>
+        <ul>
+          <li><strong class="en">Decentralization</strong><strong class="es">Descentralización</strong> — <span class="en">Each cell is an independent process. If one fails, others keep running.</span><span class="es">Cada celda es un proceso independiente. Si una falla, las demás continúan.</span></li>
+          <li><strong class="en">Atomicity</strong><strong class="es">Atomicidad</strong> — <span class="en">Each cell does exactly one thing.</span><span class="es">Cada celda hace exactamente una cosa.</span></li>
+          <li><strong class="en">Hot-swappable (Rotation)</strong><strong class="es">Intercambiabilidad (Rotación)</strong> — <span class="en">Any cell can be replaced at runtime.</span><span class="es">Cada celda puede ser reemplazada en caliente.</span></li>
+          <li><strong class="en">Memory Efficiency</strong><strong class="es">Eficiencia de Memoria</strong> — <span class="en">ZRAM compression, on-demand services, shared memory pool between face cells.</span><span class="es">Compresión ZRAM, servicios bajo demanda, pool de memoria compartida entre celdas de la misma cara.</span></li>
+          <li><strong class="en">Flat Hierarchy</strong><strong class="es">Jerarquía plana</strong> — <span class="en">No unnecessary abstraction layers. Cells communicate directly.</span><span class="es">Sin capas de abstracción innecesarias. Comunicación directa entre celdas.</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 class="en">The Rubik Orchestrator (rubikd)</h3>
+        <h3 class="es">El Orquestador Rubik (rubikd)</h3>
+        <p class="en">The central orchestrator manages cell lifecycle, dependencies, health checks, and memory metrics.</p>
+        <p class="es">El orquestador central gestiona el ciclo de vida de las celdas, dependencias, health checks y métricas de memoria.</p>
+        <pre><code>rubikctl status          <span class="en"># Status of all cells</span><span class="es"># Estado de todas las celdas</span>
+rubikctl rotate face-0   <span class="en"># Replace all cells in a face</span><span class="es"># Reemplazar todas las celdas de una cara</span>
+rubikctl cell enable F0.4 memory-compression
+rubikctl cell disable F2.2 defrag</code></pre>
+      </div>
+    </section>
+
+    <!-- ===== FACES ===== -->
+    <section id="faces">
+      <h2 class="en">Faces (F0-F5)</h2>
+      <h2 class="es">Caras (F0-F5)</h2>
+
+      <div class="card face" style="border-left-color:#58a6ff">
+        <h3>F0 — <span class="en">Kernel & Memory</span><span class="es">Kernel y Memoria</span></h3>
+        <div class="cell-grid">
+          <div class="cell-item"><strong>Kernel-lts</strong><br><span class="en">Linux LTS with Rubik patches</span><span class="es">Linux LTS con parches Rubik</span></div>
+          <div class="cell-item"><strong>Memory-compression</strong><br><span class="en">Dynamic ZRAM + zswap</span><span class="es">ZRAM + zswap dinámico</span></div>
+          <div class="cell-item"><strong>Swap-manager</strong><br><span class="en">Smart swap with page prioritization</span><span class="es">Swap inteligente con priorización</span></div>
+          <div class="cell-item"><strong>OOM-guard</strong><br><span class="en">EarlyOOM + notifications</span><span class="es">EarlyOOM + notificaciones</span></div>
+          <div class="cell-item"><strong>Hugepages</strong><br><span class="en">Dynamic transparent hugepages</span><span class="es">Hugepages transparentes dinámicas</span></div>
+          <div class="cell-item"><strong>Cache-tune</strong><br><span class="en">Auto vfs_cache_pressure, dirty_ratio</span><span class="es">Ajuste automático</span></div>
+          <div class="cell-item"><strong>IRQ-balance</strong><br><span class="en">Interrupt balancing across cores</span><span class="es">Balanceo de IRQ entre cores</span></div>
+          <div class="cell-item"><strong>CPU-gov</strong><br><span class="en">Adaptive CPU governor</span><span class="es">Gobernador adaptativo</span></div>
+          <div class="cell-item"><strong>Mem-forecast</strong><br><span class="en">ML-based memory usage predictor</span><span class="es">Predictor de memoria (ML ligero)</span></div>
+        </div>
+      </div>
+
+      <div class="card face" style="border-left-color:#3fb950">
+        <h3>F1 — <span class="en">Processes & Services</span><span class="es">Procesos y Servicios</span></h3>
+        <div class="cell-grid">
+          <div class="cell-item"><strong>Rubikd-orchestrator</strong><br><span class="en">Central cell orchestrator</span><span class="es">Orquestador central</span></div>
+          <div class="cell-item"><strong>Systemd-minimal</strong><br><span class="en">Systemd essentials only</span><span class="es">Systemd solo lo esencial</span></div>
+          <div class="cell-item"><strong>Cgroup-manager</strong><br><span class="en">cgroups v2 isolation</span><span class="es">Aislamiento cgroups v2</span></div>
+          <div class="cell-item"><strong>Sched-tune</strong><br><span class="en">CPU priority & affinity tuning</span><span class="es">Ajuste de prioridades CPU</span></div>
+          <div class="cell-item"><strong>Service-watcher</strong><br><span class="en">Auto-restart monitor</span><span class="es">Monitor con auto-reinicio</span></div>
+          <div class="cell-item"><strong>Log-forwarder</strong><br><span class="en">Minimal journald forwarding</span><span class="es">Forwarder de logs a journald</span></div>
+          <div class="cell-item"><strong>Initramfs</strong><br><span class="en">Minimal parallel boot initramfs</span><span class="es">Initramfs mínimo con arranque paralelo</span></div>
+          <div class="cell-item"><strong>Power-manager</strong><br><span class="en">Sleep states & frequency</span><span class="es">Gestión de sueño y frecuencia</span></div>
+        </div>
+      </div>
+
+      <div class="card face" style="border-left-color:#d29922">
+        <h3>F2 — <span class="en">Storage</span><span class="es">Almacenamiento</span></h3>
+        <div class="cell-grid">
+          <div class="cell-item"><strong>Fs-layout</strong><br><span class="en">Rubik directory structure</span><span class="es">Estructura de directorios Rubik</span></div>
+          <div class="cell-item"><strong>Cache-io</strong><br><span class="en">Smart I/O cache (bcache/lvmcache)</span><span class="es">Caché de E/S inteligente</span></div>
+          <div class="cell-item"><strong>Tmpfs-manager</strong><br><span class="en">/tmp, /var/tmp on tmpfs</span><span class="es">/tmp, /var/tmp en tmpfs</span></div>
+          <div class="cell-item"><strong>Trim-scheduler</strong><br><span class="en">Scheduled SSD TRIM</span><span class="es">TRIM programado para SSDs</span></div>
+          <div class="cell-item"><strong>Dedup</strong><br><span class="en">Block-level deduplication</span><span class="es">Deduplicación a nivel bloques</span></div>
+          <div class="cell-item"><strong>Fs-notify</strong><br><span class="en">fanotify filesystem events</span><span class="es">Notificaciones de cambios</span></div>
+          <div class="cell-item"><strong>Snapper</strong><br><span class="en">Recovery snapshots (btrfs/zfs)</span><span class="es">Snapshots de recuperación</span></div>
+          <div class="cell-item"><strong>Defrag-lite</strong><br><span class="en">Light background defrag</span><span class="es">Desfragmentación ligera</span></div>
+        </div>
+      </div>
+
+      <div class="card face" style="border-left-color:#f85149">
+        <h3>F3 — <span class="en">Network & Communication</span><span class="es">Red y Comunicación</span></h3>
+        <div class="cell-grid">
+          <div class="cell-item"><strong>Networkd</strong><br><span class="en">Minimal systemd-networkd</span><span class="es">systemd-networkd minimal</span></div>
+          <div class="cell-item"><strong>Firewall</strong><br><span class="en">nftables with predefined rules</span><span class="es">nftables con reglas predefinidas</span></div>
+          <div class="cell-item"><strong>Dns-cache</strong><br><span class="en">Local DNS resolver</span><span class="es">Resolver DNS local</span></div>
+          <div class="cell-item"><strong>Proxy-tun</strong><br><span class="en">Auto VPN/proxy tunnel</span><span class="es">Túnel automático</span></div>
+          <div class="cell-item"><strong>Net-monitor</strong><br><span class="en">Traffic & connection monitor</span><span class="es">Monitor de tráfico</span></div>
+          <div class="cell-item"><strong>Wifi-manager</strong><br><span class="en">iwd (minimal, no NetworkManager)</span><span class="es">iwd minimal</span></div>
+          <div class="cell-item"><strong>Bandwidth-limiter</strong><br><span class="en">Per-process bandwidth limit</span><span class="es">Límite de ancho de banda por proceso</span></div>
+          <div class="cell-item"><strong>Ntp-sync</strong><br><span class="en">chrony time sync</span><span class="es">Sincronización de tiempo</span></div>
+        </div>
+      </div>
+
+      <div class="card face" style="border-left-color:#c9d1d9">
+        <h3>F4 — <span class="en">Interface & Experience</span><span class="es">Interfaz y Experiencia</span></h3>
+        <div class="cell-grid">
+          <div class="cell-item"><strong>Wm-core</strong><br><span class="en">River (Wayland compositor)</span><span class="es">River (compositor Wayland)</span></div>
+          <div class="cell-item"><strong>Bar-status</strong><br><span class="en">waybar status bar</span><span class="es">Barra de estado waybar</span></div>
+          <div class="cell-item"><strong>Launcher</strong><br><span class="en">rofi/fuzzel app launcher</span><span class="es">Lanzador rofi/fuzzel</span></div>
+          <div class="cell-item"><strong>Terminal</strong><br><span class="en">foot terminal emulator</span><span class="es">Emulador de terminal foot</span></div>
+          <div class="cell-item"><strong>Notifier</strong><br><span class="en">mako/dunst notifications</span><span class="es">Notificaciones mako/dunst</span></div>
+          <div class="cell-item"><strong>Wallpaper</strong><br><span class="en">swaybg wallpaper manager</span><span class="es">Gestor de wallpaper</span></div>
+          <div class="cell-item"><strong>Clipboard</strong><br><span class="en">wl-clipboard</span><span class="es">Portapapeles</span></div>
+          <div class="cell-item"><strong>Idle-manager</strong><br><span class="en">swaylock idle/lockscreen</span><span class="es">Bloqueo de pantalla</span></div>
+        </div>
+      </div>
+
+      <div class="card face" style="border-left-color:#8b949e">
+        <h3>F5 — <span class="en">Security & Isolation</span><span class="es">Seguridad y Aislamiento</span></h3>
+        <div class="cell-grid">
+          <div class="cell-item"><strong>Apparmor</strong><br><span class="en">AppArmor profiles for all cells</span><span class="es">Perfiles AppArmor</span></div>
+          <div class="cell-item"><strong>Sandbox-exec</strong><br><span class="en">bubblewrap sandboxed execution</span><span class="es">Ejecución en sandbox</span></div>
+          <div class="cell-item"><strong>Audit</strong><br><span class="en">System event auditing</span><span class="es">Auditoría de eventos</span></div>
+          <div class="cell-item"><strong>Crypto</strong><br><span class="en">LUKS encryption + key mgmt</span><span class="es">Cifrado LUKS</span></div>
+          <div class="cell-item"><strong>Integrity</strong><br><span class="en">Package integrity verification</span><span class="es">Verificación de integridad</span></div>
+          <div class="cell-item"><strong>Firejail</strong><br><span class="en">App isolation sandbox</span><span class="es">Aislamiento de apps</span></div>
+          <div class="cell-item"><strong>Update-auth</strong><br><span class="en">Signed update authentication</span><span class="es">Autenticación de actualizaciones</span></div>
+          <div class="cell-item"><strong>Cell-isolation</strong><br><span class="en">namespace-based cell isolation</span><span class="es">Aislamiento entre celdas</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PACKAGE REPO ===== -->
+    <section id="repo">
+      <h2 class="en">Package Repository <code>[rubik]</code></h2>
+      <h2 class="es">Repositorio de paquetes <code>[rubik]</code></h2>
+      <div class="card">
+        <p class="en">Add the official Rubik OS repo to your <code>/etc/pacman.conf</code>:</p>
+        <p class="es">Agregá el repo oficial de Rubik OS a tu <code>/etc/pacman.conf</code>:</p>
         <pre><code>[rubik]
 Server = https://erac73.github.io/rubik-os/repo/$arch</code></pre>
-        <p style="margin-top:0.5rem;color:#8b949e;font-size:0.9rem">Paquetes disponibles:</p>
+        <p style="margin-top:0.5rem;color:#8b949e;font-size:0.9rem" class="en">Available packages:</p>
+        <p style="margin-top:0.5rem;color:#8b949e;font-size:0.9rem" class="es">Paquetes disponibles:</p>
         <ul>
-          <li><code>rubik-core</code> — Sistema base de Rubik OS (orquestador, celdas, caras, systemd units, perfiles AppArmor)</li>
-          <li><code>rubik-face-0</code> a <code>rubik-face-5</code> — Scripts de cada cara del Cubo Rubik</li>
+          <li><code>rubik-core</code> — <span class="en">Rubik OS base (orchestrator, cells, faces, systemd units, AppArmor profiles)</span><span class="es">Sistema base de Rubik OS (orquestador, celdas, caras, systemd units, perfiles AppArmor)</span></li>
+          <li><code>rubik-face-0</code> to <code>rubik-face-5</code> — <span class="en">Scripts for each Rubik's Cube face</span><span class="es">Scripts de cada cara del Cubo Rubik</span></li>
         </ul>
         <div style="margin-top:1rem">
-          <p style="font-size:0.85rem;color:#8b949e">Luego instalá con pacman:</p>
+          <p style="font-size:0.85rem;color:#8b949e" class="en">Then install with pacman:</p>
+          <p style="font-size:0.85rem;color:#8b949e" class="es">Luego instalá con pacman:</p>
           <pre><code>pacman -Sy rubik-core</code></pre>
         </div>
       </div>
     </section>
 
-    <section>
-      <h2>Acerca de</h2>
-      <div class="card">
-        <p>Rubik OS es una distribución Linux basada en Arch que funciona con <strong>80-120 MB RAM en idle</strong>. Reorganiza cada componente como una <strong>celda independiente</strong> — como las caras de un Cubo Rubik — con su propio cgroup, perfil AppArmor y límites de recursos.</p>
-        <div class="grid" style="margin-top:1.5rem">
-          <div class="stat"><div class="stat-value">80-120 MB</div><div class="stat-label">RAM idle (sin GUI)</div></div>
-          <div class="stat"><div class="stat-value">~80-150</div><div class="stat-label">Procesos en idle</div></div>
-          <div class="stat"><div class="stat-value">56</div><div class="stat-label">Celdas atómicas</div></div>
-          <div class="stat"><div class="stat-value">6</div><div class="stat-label">Caras (F0-F5)</div></div>
-        </div>
-        <p style="margin-top:1rem;color:#8b949e">Ideal para laptops viejas, single-board computers, VMs y cualquiera que quiera un Linux modular y eficiente.</p>
-      </div>
-    </section>
-
-    <section>
-      <h2>Estructura</h2>
-      <div class="card">
-        <table style="width:100%;border-collapse:collapse">
-          <tr><th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border);color:var(--accent)">Cara</th><th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border);color:var(--accent)">Subsistema</th><th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border);color:var(--accent)">Celdas</th></tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border)"><strong>F0</strong></td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">Kernel & Memoria</td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">9</td></tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border)"><strong>F1</strong></td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">Procesos & Servicios</td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">9</td></tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border)"><strong>F2</strong></td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">Almacenamiento</td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">9</td></tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border)"><strong>F3</strong></td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">Red & Comunicación</td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">11</td></tr>
-          <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border)"><strong>F4</strong></td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">Interfaz & Experiencia</td><td style="padding:0.5rem;border-bottom:1px solid var(--border)">11</td></tr>
-          <tr><td style="padding:0.5rem"><strong>F5</strong></td><td style="padding:0.5rem">Seguridad & Aislamiento</td><td style="padding:0.5rem">9</td></tr>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <h2>Construir desde fuente</h2>
+    <!-- ===== BUILD ===== -->
+    <section id="build">
+      <h2 class="en">Build from Source</h2>
+      <h2 class="es">Construir desde fuente</h2>
       <div class="card">
         <pre><code>git clone https://github.com/erac73/rubik-os.git
 cd rubik-os
@@ -157,10 +384,53 @@ cd rubik-os
       </div>
     </section>
 
+    <!-- ===== CELL LIFECYCLE ===== -->
+    <section>
+      <h2 class="en">Cell Lifecycle</h2>
+      <h2 class="es">Ciclo de Vida de una Celda</h2>
+      <div class="card">
+        <pre><code>REGISTERED → LOADED → ACTIVE → HEALTHY
+                          ↓
+                     DEGRADED → RETRY → ACTIVE
+                          ↓
+                      FAILED → NOTIFY → RESTART</code></pre>
+        <p class="en" style="margin-top:0.5rem;color:#8b949e">The orchestrator monitors each cell's state and executes corrective actions automatically.</p>
+        <p class="es" style="margin-top:0.5rem;color:#8b949e">El orquestador monitorea el estado de cada celda y ejecuta acciones correctivas automáticamente.</p>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
     <footer>
-      <p><a href="https://github.com/erac73/rubik-os">GitHub</a> &middot; <a href="https://github.com/erac73/rubik-os/blob/main/LICENSE">GPLv3</a> &middot; Hecho con dedicación</p>
+      <div class="social">
+        <a href="https://github.com/erac73" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="https://x.com/erac73" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @erac73
+        </a>
+      </div>
+      <p style="margin-top:1rem">
+        <a href="https://github.com/erac73/rubik-os">GitHub</a> &middot;
+        <a href="https://github.com/erac73/rubik-os/blob/main/LICENSE">GPLv3</a> &middot;
+        <span class="en">Made with dedication by Ed</span><span class="es">Hecho con dedicación por Ed</span>
+      </p>
     </footer>
 
   </div>
+
+  <script>
+    let lang = 'en';
+    function toggleLang() {
+      lang = lang === 'en' ? 'es' : 'en';
+      document.documentElement.lang = lang;
+      document.getElementById('langBtn').textContent = lang === 'en' ? 'Español' : 'English';
+      for (const el of document.querySelectorAll('.en, .es')) {
+        el.style.display = el.classList.contains(lang) ? '' : 'none';
+      }
+    }
+    toggleLang();
+  </script>
 </body>
 </html>
