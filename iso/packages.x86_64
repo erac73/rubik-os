@@ -48,7 +48,7 @@ network-manager-applet
 iwd
 wpa_supplicant
 wireless-regdb
-wireless-tools
+wireless_tools
 iw
 dhcpcd
 dnsmasq
@@ -58,7 +58,6 @@ nftables
 openvpn
 wireguard-tools
 strongswan
-frr
 bind
 ethtool
 tcpdump
@@ -82,19 +81,17 @@ alsa-utils
 alsa-firmware
 alsa-plugins
 sof-firmware
-pulseaudio-utils
 helvum
 easyeffects
 
 # ── GPU & Display ──────────────────────────────
 mesa
 mesa-utils
-mesa-vdpau
+
 libva-mesa-driver
 vulkan-icd-loader
 vulkan-intel
 vulkan-radeon
-amdvlk
 nvidia-open-dkms
 nvidia-utils
 nvidia-settings
@@ -110,7 +107,7 @@ xorg-xrandr
 xorg-xrdb
 xorg-xset
 xorg-xdpyinfo
-xwayland
+xorg-xwayland
 wayland
 wayland-utils
 weston
@@ -119,7 +116,6 @@ weston
 river
 hyprland
 sway
-dwl
 waybar
 rofi
 wofi
@@ -137,9 +133,6 @@ grim
 slurp
 wl-clipboard
 brightnessctl
-light
-mako
-waypaper
 
 # ── Fonts & Theming ────────────────────────────
 ttf-dejavu
@@ -175,8 +168,6 @@ acpi
 acpid
 acpi_call
 powertop
-s2ram
-s2disk
 
 # ── System Utilities ───────────────────────────
 arch-install-scripts
@@ -251,9 +242,4 @@ rust
 fish
 zsh
 
-# ── Rubik OS Core ──────────────────────────────
-rubik-core
-rubik-orchestrator
-rubik-network
-rubik-recovery
-rubik-bench
+

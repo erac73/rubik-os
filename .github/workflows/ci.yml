@@ -82,7 +82,10 @@ jobs:
             scripts/build-iso.sh \
             iso/profiledef.sh \
             iso/pacman.conf \
-            iso/archiso/packages.x86_64 \
+            iso/airootfs/usr/bin/rubikd \
+            iso/airootfs/usr/bin/rubikctl \
+            iso/airootfs/usr/bin/rubik-install \
+            iso/airootfs/usr/bin/rubik-init \
             iso/airootfs/etc/rubik/cells.toml \
             iso/airootfs/etc/sysctl.d/90-rubik-memory.conf \
             iso/airootfs/etc/sysctl.d/99-rubik-security.conf \
@@ -114,3 +117,29 @@ jobs:
           done
           echo "Files checked: $errors missing"
           exit $errors
+
+  docker-build:
+    name: Docker ISO Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ISO in Docker
+        run: |
+          docker run --rm --privileged \
+            -v "$(pwd):/rubik-os" \
+            archlinux:latest bash -c "
+            pacman -Syu --noconfirm && \
+            pacman -S --noconfirm archiso squashfs-tools && \
+            cd /rubik-os && \
+            cp scripts/rubik-orchestrator iso/airootfs/usr/bin/rubikd && \
+            cp scripts/rubik-orchestrator iso/airootfs/usr/bin/rubikctl && \
+            cp scripts/rubik-install iso/airootfs/usr/bin/rubik-install && \
+            cp scripts/rubik-init iso/airootfs/usr/bin/rubik-init && \
+            mkarchiso -v -w /tmp/work -o /rubik-os/out iso/
+          "
+
+      - name: Verify ISO exists
+        run: |
+          ls -lh out/*.iso
+          echo "ISO build successful"

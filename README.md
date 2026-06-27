@@ -147,7 +147,7 @@ Cada celda es un proceso/servicio independiente con:
 ├─────────────────────────────────────────────┤
 │  ZRAM  │  earlyOOM  │  AppArmor  │  cgroups  │  ← Memoria + Seguridad
 ├─────────────────────────────────────────────┤
-│            Linux Kernel LTS                 │  ← Con parches Rubik
+│            Linux Kernel LTS                 │  ← Optimizado para baja memoria
 └─────────────────────────────────────────────┘
 ```
 
