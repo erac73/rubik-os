@@ -3,180 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rubik OS — Memory-optimized. Decentralized architecture.</title>
-  <meta name="description" content="Rubik OS is an Arch-based Linux distribution optimized for low-resource hardware. 80-120 MB RAM at idle.">
-  <style>
-    :root { --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff; --border: #30363d; --green: #3fb950; --orange: #d29922; --red: #f85149; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
-    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
-    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; position: relative; }
-    header h1 { font-size: 2.5rem; color: #fff; }
-    header p { font-size: 1.1rem; color: #8b949e; margin-top: 0.5rem; }
-    .badges { margin: 1rem 0; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
-    .badges img { height: 20px; }
-    .logo { width: 120px; height: 120px; margin-bottom: 1rem; }
-    .lang-btn { position: absolute; top: 1rem; right: 1rem; background: #21262d; border: 1px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
-    .lang-btn:hover { background: #30363d; }
-    h2 { font-size: 1.5rem; color: #fff; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-    h3 { font-size: 1.2rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
-    .card { background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
-    .card.download { border-color: var(--green); }
-    .btn { display: inline-block; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin: 0.25rem; }
-    .btn-primary { background: #238636; color: #fff; }
-    .btn-primary:hover { background: #2ea043; }
-    .btn-secondary { background: #21262d; color: var(--fg); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: #30363d; }
-    code { background: #21262d; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; color: var(--accent); }
-    pre { background: #21262d; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 0.5rem 0; }
-    pre code { background: none; padding: 0; }
-    ul { padding-left: 1.5rem; }
-    li { margin: 0.5rem 0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-    .stat { text-align: center; padding: 1rem; }
-    .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--green); }
-    .stat-label { font-size: 0.85rem; color: #8b949e; }
-    .steps { counter-reset: step; }
-    .step { margin: 1rem 0; padding-left: 2.5rem; position: relative; }
-    .step::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; background: var(--accent); color: #fff; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
-    footer { text-align: center; padding: 2rem 0; margin-top: 2rem; border-top: 1px solid var(--border); color: #8b949e; font-size: 0.85rem; }
-    footer a { color: var(--accent); text-decoration: none; }
-    .social { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
-    .social a { color: #8b949e; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
-    .social a:hover { color: var(--accent); }
-    .social svg { width: 20px; height: 20px; fill: currentColor; }
-    .es { display: none; }
-    .nav-bar { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1.5rem 0; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
-    .nav-bar a { color: #8b949e; text-decoration: none; font-size: 0.9rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
-    .nav-bar a:hover { color: var(--accent); background: #21262d; }
-    .hero { text-align: center; padding: 2rem 0; }
-    .hero h1 { font-size: 3rem; color: #fff; margin-bottom: 0.5rem; }
-    .hero p { font-size: 1.2rem; color: #8b949e; max-width: 600px; margin: 0 auto; }
-    @media (max-width: 600px) { header h1 { font-size: 1.8rem; } .container { padding: 1rem; } .lang-btn { position: static; margin-top: 1rem; } .hero h1 { font-size: 2rem; } }
-  </style>
+  <title>Rubik OS — Memory-optimized Linux</title>
+  <meta name="description" content="Rubik OS is an Arch-based Linux distribution optimized for low-resource hardware. 80–120 MB RAM at idle.">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
 
-    <header>
+    <header style="position:relative">
       <button class="lang-btn" onclick="toggleLang()" id="langBtn">Español</button>
-      <svg class="logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="8" width="240" height="240" rx="32" stroke="#58a6ff" stroke-width="4"/>
-        <rect x="48" y="48" width="64" height="64" rx="8" fill="#58a6ff" opacity="0.8"/>
-        <rect x="144" y="48" width="64" height="64" rx="8" fill="#3fb950" opacity="0.8"/>
-        <rect x="48" y="144" width="64" height="64" rx="8" fill="#d29922" opacity="0.8"/>
-        <rect x="144" y="144" width="64" height="64" rx="8" fill="#f85149" opacity="0.8"/>
-        <rect x="96" y="96" width="64" height="64" rx="8" fill="#c9d1d9" opacity="0.6"/>
-      </svg>
-      <p class="en">Memory-optimized &middot; Decentralized &middot; Inspired by the Rubik's Cube</p>
-      <p class="es">Optimizada para memoria &middot; Descentralizada &middot; Inspirada en el Cubo Rubik</p>
-      <div class="badges">
-        <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPLv3">
-        <img src="https://img.shields.io/badge/Base-Arch_Linux-1793D1?logo=arch-linux&logoColor=white" alt="Arch Linux">
-        <img src="https://img.shields.io/badge/RAM_idle-80%E2%80%93120_MB-success" alt="RAM Idle">
+      <div class="ascii">
+        <pre>       ┌───┬───┬───┐
+       │ F4│ F4│ F4│
+       ├───┼───┼───┤
+       │ F4│ F4│ F4│
+       ├───┼───┼───┤
+       │ F4│ F4│ F4│
+┌───┬───┼───┼───┼───┼───┬───┬───┐
+│ F5│ F5│ F5│ F3│ F3│ F3│ F3│ F3│
+├───┼───┼───┼───┼───┼───┼───┼───┤
+│ F5│ F5│ F5│ F3│ F3│ F3│ F3│ F3│
+├───┼───┼───┼───┼───┼───┼───┼───┤
+│ F5│ F5│ F5│ F3│ F3│ F3│ F3│ F3│
+└───┴───┴───┼───┼───┼───┴───┴───┘
+            │ F2│ F2│ F2│
+            ├───┼───┼───┤
+            │ F2│ F2│ F2│
+            ├───┼───┼───┤
+            │ F2│ F2│ F2│
+            └───┴───┴───┘
+                 │ F1│ F1│ F1│
+                 ├───┼───┼───┤
+                 │ F1│ F1│ F1│
+                 ├───┼───┼───┤
+                 │ F1│ F1│ F1│
+                 └───┴───┴───┘
+                      │ F0│ F0│ F0│
+                      ├───┼───┼───┤
+                      │ F0│ F0│ F0│
+                      ├───┼───┼───┤
+                      │ F0│ F0│ F0│
+                      └───┴───┴───┘</pre>
       </div>
+      <h1>Rubik OS</h1>
+      <p class="en">Memory-optimized, decentralized Linux inspired by the Rubik's Cube</p>
+      <p class="es">Linux optimizado para memoria, descentralizado, inspirado en el Cubo Rubik</p>
     </header>
 
-    <nav class="nav-bar">
+    <nav class="nav-links">
       <a href="/rubik-os/" class="en">Home</a><a href="/rubik-os/" class="es">Inicio</a>
-      <a href="/rubik-os/architecture.html" class="en">Architecture</a><a href="/rubik-os/architecture.html" class="es">Arquitectura</a>
-      <a href="/rubik-os/faces.html" class="en">Faces (F0-F5)</a><a href="/rubik-os/faces.html" class="es">Caras</a>
-      <a href="/rubik-os/packages.html" class="en">Packages</a><a href="/rubik-os/packages.html" class="es">Paquetes</a>
+      <a href="/rubik-os/architecture.html">Architecture</a>
+      <a href="/rubik-os/faces.html"><span class="en">Faces (F0–F5)</span><span class="es">Caras (F0–F5)</span></a>
+      <a href="/rubik-os/packages.html"><span class="en">Packages</span><span class="es">Paquetes</span></a>
     </nav>
 
-    <div class="hero">
-      <h1>Rubik OS</h1>
-      <p class="en">An Arch-based Linux distribution that runs on <strong>80-120 MB RAM at idle</strong>.<br>Every component is an independent cell — modular, swappable, efficient.</p>
-      <p class="es">Una distribución Linux basada en Arch que funciona con <strong>80-120 MB RAM en idle</strong>.<br>Cada componente es una celda independiente — modular, intercambiable, eficiente.</p>
-      <div style="margin-top:1.5rem">
-        <a href="#download" class="btn btn-primary" style="font-size:1.1rem;padding:1rem 2rem"><span class="en">Download ISO</span><span class="es">Descargar ISO</span></a>
+    <div class="section">
+      <h2 class="en">Download</h2>
+      <h2 class="es">Descargar</h2>
+      <p class="en">Latest stable release — <strong>v1.0.0</strong> (2026-06-27). ~2.9 GB (compressed, 2 parts).</p>
+      <p class="es">Última versión estable — <strong>v1.0.0</strong> (2026-06-27). ~2.9 GB (comprimido, 2 partes).</p>
+      <div class="download-grid">
+        <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_aa" class="tag"><span class="en">Part 1 (1.9 GB)</span><span class="es">Parte 1 (1.9 GB)</span></a>
+        <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_ab" class="tag"><span class="en">Part 2 (918 MB)</span><span class="es">Parte 2 (918 MB)</span></a>
+        <a href="https://github.com/erac73/rubik-os/releases/tag/v1.0.0" class="tag"><span class="en">Release</span><span class="es">Release</span></a>
+      </div>
+      <details>
+        <summary class="en">Reconstruct the ISO</summary>
+        <summary class="es">Reconstruir la ISO</summary>
+        <pre class="block">cat rubik-os-*.iso.xz.part_* > rubik-os-20260627-x86_64.iso.xz
+xz -d rubik-os-20260627-x86_64.iso.xz</pre>
+      </details>
+      <details>
+        <summary class="en">Write to USB</summary>
+        <summary class="es">Grabar en USB</summary>
+        <pre class="block"># Linux
+dd if=rubik-os-20260627-x86_64.iso of=/dev/sdX bs=4M status=progress && sync
+
+# Windows (Rufus) — mode: "DD Image" (NOT "ISO Image")
+
+# macOS
+sudo dd if=rubik-os-20260627-x86_64.iso of=/dev/diskX bs=4m status=progress</pre>
+      </details>
+    </div>
+
+    <div class="section">
+      <h2 class="en">About</h2>
+      <h2 class="es">Acerca de</h2>
+      <p class="en">Rubik OS runs on <strong>80–120 MB RAM at idle</strong> by reorganizing every component into <strong>58 independent cells</strong> arranged across <strong>6 faces</strong> (F0–F5), like a Rubik's Cube. Each cell has its own cgroup, AppArmor profile, and resource limits. Cells are hot-swappable without rebooting.</p>
+      <p class="es">Rubik OS funciona con <strong>80–120 MB RAM en idle</strong> reorganizando cada componente en <strong>58 celdas independientes</strong> distribuidas en <strong>6 caras</strong> (F0–F5), como un Cubo Rubik. Cada celda tiene su propio cgroup, perfil AppArmor y límites de recursos. Las celdas son intercambiables en caliente.</p>
+      <div class="stats" style="margin-top:1rem">
+        <div class="stat"><span class="stat-val">80–120 MB</span> <span class="stat-label en">RAM idle</span><span class="stat-label es">RAM idle</span></div>
+        <div class="stat"><span class="stat-val">~80–150</span> <span class="stat-label en">processes</span><span class="stat-label es">procesos</span></div>
+        <div class="stat"><span class="stat-val">58</span> <span class="stat-label en">cells</span><span class="stat-label es">celdas</span></div>
+        <div class="stat"><span class="stat-val">6</span> <span class="stat-label en">faces</span><span class="stat-label es">caras</span></div>
       </div>
     </div>
 
-    <section id="download">
-      <h2 class="en">Download ISO</h2>
-      <h2 class="es">Descargar ISO</h2>
-      <div class="card download">
-        <p style="margin-bottom:1rem" class="en">Latest stable release — <strong>v1.0.0</strong> (2026-06-27)</p>
-        <p style="margin-bottom:1rem" class="es">Última versión estable — <strong>v1.0.0</strong> (2026-06-27)</p>
-        <p style="margin-bottom:1rem;color:#8b949e;font-size:0.9rem" class="en">UEFI-bootable ISO. ~2.9 GB (compressed: 2.8 GB in 2 parts).</p>
-        <p style="margin-bottom:1rem;color:#8b949e;font-size:0.9rem" class="es">ISO booteable UEFI. ~2.9 GB (comprimido: 2.8 GB en 2 partes).</p>
-        <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
-          <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_aa" class="btn btn-primary"><span class="en">Part 1 (1.9 GB)</span><span class="es">Parte 1 (1.9 GB)</span></a>
-          <a href="https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_ab" class="btn btn-primary"><span class="en">Part 2 (918 MB)</span><span class="es">Parte 2 (918 MB)</span></a>
-          <a href="https://github.com/erac73/rubik-os/releases/tag/v1.0.0" class="btn btn-secondary"><span class="en">View Release</span><span class="es">Ver Release</span></a>
-        </div>
-        <details style="margin-top:1rem">
-          <summary style="cursor:pointer;color:var(--accent);font-size:0.9rem" class="en">Reconstruct the ISO</summary>
-          <summary style="cursor:pointer;color:var(--accent);font-size:0.9rem" class="es">Reconstruir la ISO</summary>
-          <pre><code>cat rubik-os-*.iso.xz.part_* > rubik-os-20260627-x86_64.iso.xz
-xz -d rubik-os-20260627-x86_64.iso.xz</code></pre>
-        </details>
+    <div class="section">
+      <h2 class="en">Links</h2>
+      <h2 class="es">Enlaces</h2>
+      <div class="links-grid">
+        <a href="https://github.com/erac73">GitHub /erac73</a>
+        <a href="https://x.com/erac73">X @erac73</a>
+        <a href="https://github.com/erac73/rubik-os"><span class="en">Repository</span><span class="es">Repositorio</span></a>
+        <a href="https://github.com/erac73/rubik-os/blob/main/LICENSE">GPLv3</a>
       </div>
-    </section>
-
-    <section>
-      <h2 class="en">Write to USB</h2>
-      <h2 class="es">Grabar en USB</h2>
-      <div class="card">
-        <div class="steps">
-          <div class="step">
-            <strong>Linux</strong>
-            <pre><code>dd if=rubik-os-20260627-x86_64.iso of=/dev/sdX bs=4M status=progress && sync</code></pre>
-          </div>
-          <div class="step">
-            <strong>Windows (Rufus)</strong>
-            <p style="color:#8b949e;font-size:0.9rem" class="en">Select the ISO → Mode: <strong>"DD Image"</strong> (NOT "ISO Image") → Write</p>
-            <p style="color:#8b949e;font-size:0.9rem" class="es">Seleccionar la ISO → Modo: <strong>"DD Image"</strong> (NO "ISO Image") → Escribir</p>
-          </div>
-          <div class="step">
-            <strong>macOS</strong>
-            <pre><code>sudo dd if=rubik-os-20260627-x86_64.iso of=/dev/diskX bs=4m status=progress</code></pre>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="en">About Rubik OS</h2>
-      <h2 class="es">Acerca de Rubik OS</h2>
-      <div class="card">
-        <p class="en">Rubik OS reorganizes the operating system into <strong>58 atomic cells</strong> arranged across <strong>6 faces</strong> (F0-F5), like a Rubik's Cube. Each cell has its own cgroup, AppArmor profile, and resource limits. If one cell fails, the rest keep running.</p>
-        <p class="es">Rubik OS reorganiza el sistema operativo en <strong>58 celdas atómicas</strong> distribuidas en <strong>6 caras</strong> (F0-F5), como un Cubo Rubik. Cada celda tiene su propio cgroup, perfil AppArmor y límites de recursos. Si una celda falla, las demás continúan.</p>
-        <div class="grid" style="margin-top:1.5rem">
-          <div class="stat"><div class="stat-value">80-120 MB</div><div class="stat-label en">RAM idle (no GUI)</div><div class="stat-label es">RAM idle (sin GUI)</div></div>
-          <div class="stat"><div class="stat-value">~80-150</div><div class="stat-label en">Processes at idle</div><div class="stat-label es">Procesos en idle</div></div>
-          <div class="stat"><div class="stat-value">58</div><div class="stat-label en">Atomic cells</div><div class="stat-label es">Celdas atómicas</div></div>
-          <div class="stat"><div class="stat-value">6</div><div class="stat-label en">Faces (F0-F5)</div><div class="stat-label es">Caras (F0-F5)</div></div>
-        </div>
-        <p style="margin-top:1rem;color:#8b949e" class="en">Ideal for old laptops, single-board computers, VMs, and anyone who wants a modular, efficient Linux.</p>
-        <p style="margin-top:1rem;color:#8b949e" class="es">Ideal para laptops viejas, single-board computers, VMs y cualquiera que quiera un Linux modular y eficiente.</p>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="en">Social & Links</h2>
-      <h2 class="es">Redes y Enlaces</h2>
-      <div class="card" style="text-align:center">
-        <div class="social" style="font-size:1.1rem">
-          <a href="https://github.com/erac73" target="_blank" rel="noopener">
-            <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            GitHub /erac73
-          </a>
-          <a href="https://x.com/erac73" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            @erac73
-          </a>
-          <a href="https://github.com/erac73/rubik-os" target="_blank" rel="noopener">
-            <svg viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5zm10.5-1h-8a1 1 0 00-1 1v6.708A2.486 2.486 0 014.5 9h8z"/></svg>
-            <span class="en">Project Repository</span><span class="es">Repositorio del Proyecto</span>
-          </a>
-        </div>
-      </div>
-    </section>
+    </div>
 
     <footer>
-      <p><a href="https://github.com/erac73/rubik-os">GitHub</a> &middot; <a href="https://github.com/erac73/rubik-os/blob/main/LICENSE">GPLv3</a> &middot; <span class="en">Made with dedication by Ed</span><span class="es">Hecho con dedicación por Ed</span></p>
+      <p><span class="en">Made with dedication by Ed</span><span class="es">Hecho con dedicación por Ed</span></p>
     </footer>
 
   </div>
