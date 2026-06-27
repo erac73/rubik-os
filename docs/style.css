@@ -32,7 +32,7 @@ header p { color: var(--dim); }
   position: absolute; top: 1.5rem; right: 1.5rem;
 }
 .lang-btn:hover { color: var(--fg); border-color: var(--accent); }
-.es { display: none; }
+
 .nav-links { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; margin: 2rem 0; }
 .nav-links a { color: var(--dim); text-decoration: none; font-size: 13px; }
 .nav-links a:hover { color: var(--fg); text-decoration: underline; }

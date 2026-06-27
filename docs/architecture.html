@@ -84,14 +84,15 @@ rubikctl cell disable F2.2 defrag</pre>
 
   <script>
     let lang = 'en';
-    function toggleLang() {
-      lang = lang === 'en' ? 'es' : 'en';
+    function setLang(l) {
+      lang = l;
       document.documentElement.lang = lang;
       document.getElementById('langBtn').textContent = lang === 'en' ? 'Español' : 'English';
-      for (const el of document.querySelectorAll('.en, .es')) {
-        el.style.display = el.classList.contains(lang) ? '' : 'none';
-      }
+      for (const el of document.querySelectorAll('.en')) el.style.display = lang === 'en' ? '' : 'none';
+      for (const el of document.querySelectorAll('.es')) el.style.display = lang === 'es' ? '' : 'none';
     }
+    function toggleLang() { setLang(lang === 'en' ? 'es' : 'en'); }
+    setLang('en');
   </script>
 </body>
 </html>
