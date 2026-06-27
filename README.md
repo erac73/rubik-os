@@ -329,24 +329,39 @@ Próximo: v1.1.0
 
 ---
 
-## Lo que falta para v1.1.0
+## 🌐 Website
 
-- [ ] Repositorio de paquetes `[rubik]` en pacman.conf
-- [ ] CI publish: subir ISO a release automáticamente
-- [ ] Reducir tamaño de ISO
+El sitio web oficial está en **[https://erac73.github.io/rubik-os/](https://erac73.github.io/rubik-os/)** — bilingüe inglés/español.
 
-### ✅ v1.0.0 — Completado
+| Página | Descripción |
+|--------|-------------|
+| [Home](https://erac73.github.io/rubik-os/) | Descarga de ISO, escritura en USB, acerca de, redes sociales |
+| [Architecture](https://erac73.github.io/rubik-os/architecture.html) | Modelo del Cubo Rubik, principios, orquestador, ciclo de vida |
+| [Faces (F0-F5)](https://erac73.github.io/rubik-os/faces.html) | Las 58 celdas atómicas detalladas por cara |
+| [Packages](https://erac73.github.io/rubik-os/packages.html) | Repositorio de paquetes `[rubik]`, build desde fuente |
 
-- [x] ISO booteable construida y publicada en GitHub Releases
-- [x] 8 celdas stub implementadas (cgroup-manager, crypto, dedup, firejail, initramfs, sandbox-exec, update-auth, cell-isolation)
-- [x] `packages/faces/face-0` a `face-5` con PKGBUILDs
-- [x] Issue/PR templates en `.github/`
-- [x] `CONTRIBUTING.md` y `CODE_OF_CONDUCT.md`
-- [x] Systemd units movidas a `system/` (path estándar)
-- [x] `rubik-boot` creado y empaquetado en ISO + PKGBUILD
-- [x] Face ops corregidas (leen cells.toml en vez de directorios)
-- [x] Tests actualizados con paths correctos
-- [x] Docker scripts limpiados (solo docker-build.sh)
+---
+
+## Estado del proyecto
+
+| Componente | v1.0.0 | v1.1.0 (próximo) |
+|---|---|---|
+| Scripts de celda | **36** | — |
+| Scripts de cara | **6/6** (100%) | — |
+| Systemd units | **8** | — |
+| AppArmor profiles | **3** | — |
+| Scripts de sistema | **7** | — |
+| Orquestador | daemon mode, bootstrap, validate, health checks, shutdown, face ops | — |
+| Tests | **30+** tests bats | — |
+| CI/CD | GitHub Actions (lint, tests, build-check, docker-build) | **Publish ISO a releases** |
+| Instalador | Interactivo + `--yes --disk=/dev/sda` | — |
+| Repositorio de paquetes | ✅ `[rubik]` en GitHub Pages | — |
+| ISO size | ~2.9 GB | **Reducir a ~1.5 GB** |
+| Website | ✅ Bilingüe EN/ES con 4 páginas | — |
+
+---
+
+## Licencia
 
 ---
 
