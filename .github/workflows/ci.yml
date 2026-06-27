@@ -100,6 +100,7 @@ jobs:
             scripts/rubik-network \
             scripts/rubik-recovery \
             scripts/rubik-bench \
+            scripts/rubik-boot \
             scripts/rubik-configure \
             iso/airootfs/etc/apparmor.d/rubik/rubik-cell \
             iso/airootfs/etc/apparmor.d/rubik/rubik-cell-network \
@@ -136,6 +137,7 @@ jobs:
             cp scripts/rubik-orchestrator iso/airootfs/usr/bin/rubikctl && \
             cp scripts/rubik-install iso/airootfs/usr/bin/rubik-install && \
             cp scripts/rubik-init iso/airootfs/usr/bin/rubik-init && \
+            cp scripts/rubik-boot iso/airootfs/usr/bin/rubik-boot && \
             mkarchiso -v -w /tmp/work -o /rubik-os/out iso/
           "
 

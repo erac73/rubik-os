@@ -78,4 +78,5 @@ file_permissions=(
   ["/usr/bin/rubikctl"]="0:0:755"
   ["/usr/bin/rubik-install"]="0:0:755"
   ["/usr/bin/rubik-init"]="0:0:755"
+  ["/usr/bin/rubik-boot"]="0:0:755"
 )

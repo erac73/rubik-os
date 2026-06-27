@@ -82,10 +82,10 @@ setup() {
     done
 }
 
-@test "faces: all face scripts have face_start" {
+@test "faces: all face scripts have main function" {
     for f in ../iso/airootfs/usr/lib/rubik/faces/*.sh; do
         name=$(basename "$f")
-        grep -q "^face_start()" "$f" || echo "MISSING face_start in $name"
+        grep -q "^main()" "$f" || echo "MISSING main() in $name"
     done
 }
 
@@ -204,11 +204,11 @@ with open('../iso/airootfs/etc/rubik/cells.toml') as f:
 }
 
 @test "systemd: rubik-face@.service exists" {
-    [ -f "../iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service" ]
+    [ -f "../iso/airootfs/usr/lib/systemd/system/rubik-face@.service" ]
 }
 
 @test "systemd: rubik.target exists" {
-    [ -f "../iso/airootfs/usr/lib/systemd/rubik-services/rubik.target" ]
+    [ -f "../iso/airootfs/usr/lib/systemd/system/rubik.target" ]
 }
 
 @test "installer: has validate_environment" {

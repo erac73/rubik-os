@@ -83,18 +83,19 @@ source=(
     "pipewire.sh::../../iso/airootfs/usr/lib/rubik/cells/pipewire.sh"
     "display-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/display-manager.sh"
     "wifi-manager.sh::../../iso/airootfs/usr/lib/rubik/cells/wifi-manager.sh"
-    "rubikd.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service"
-    "rubik-cell@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service"
-    "rubik-face@.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service"
-    "rubik.target::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik.target"
-    "rubik-bluetooth.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-bluetooth.service"
-    "rubik-pipewire.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-pipewire.service"
-    "rubik-wireplumber.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-wireplumber.service"
-    "rubik-wifi.service::../../iso/airootfs/usr/lib/systemd/rubik-services/rubik-wifi.service"
+    "rubikd.service::../../iso/airootfs/usr/lib/systemd/system/rubikd.service"
+    "rubik-cell@.service::../../iso/airootfs/usr/lib/systemd/system/rubik-cell@.service"
+    "rubik-face@.service::../../iso/airootfs/usr/lib/systemd/system/rubik-face@.service"
+    "rubik.target::../../iso/airootfs/usr/lib/systemd/system/rubik.target"
+    "rubik-bluetooth.service::../../iso/airootfs/usr/lib/systemd/system/rubik-bluetooth.service"
+    "rubik-pipewire.service::../../iso/airootfs/usr/lib/systemd/system/rubik-pipewire.service"
+    "rubik-wireplumber.service::../../iso/airootfs/usr/lib/systemd/system/rubik-wireplumber.service"
+    "rubik-wifi.service::../../iso/airootfs/usr/lib/systemd/system/rubik-wifi.service"
     "rubik-configure::../../scripts/rubik-configure"
     "rubik-network::../../scripts/rubik-network"
     "rubik-recovery::../../scripts/rubik-recovery"
     "rubik-bench::../../scripts/rubik-bench"
+    "rubik-boot::../../scripts/rubik-boot"
     "rubik-cell.apparmor::../../iso/airootfs/etc/apparmor.d/rubik/rubik-cell"
     "rubik-cell-network.apparmor::../../iso/airootfs/etc/apparmor.d/rubik/rubik-cell-network"
     "rubik-cell-security.apparmor::../../iso/airootfs/etc/apparmor.d/rubik/rubik-cell-security"
@@ -159,6 +160,8 @@ package() {
         "$pkgdir/usr/bin/rubik-recovery"
     install -Dm755 "$srcdir/rubik-bench" \
         "$pkgdir/usr/bin/rubik-bench"
+    install -Dm755 "$srcdir/rubik-boot" \
+        "$pkgdir/usr/bin/rubik-boot"
 
     # AppArmor profiles
     install -Dm644 "$srcdir/rubik-cell.apparmor" \
