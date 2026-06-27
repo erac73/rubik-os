@@ -38,3 +38,17 @@ face_rotate() {
     sleep 1
     face_start
 }
+
+main() {
+    case "${1:-}" in
+        rotate) face_rotate ;;
+        stop)   face_stop ;;
+        health) face_health && echo "healthy" || echo "degraded" ;;
+        status) face_health && echo "active" || echo "inactive" ;;
+        *)      face_init; face_start ;;
+    esac
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

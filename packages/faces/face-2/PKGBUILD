@@ -1,0 +1,24 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# Face 2 — Storage cells
+
+pkgname=rubik-face-2
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS Face 2 — Storage cells"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=('rubik-core' 'btrfs-progs' 'duperemove')
+source=(
+    "fs-layout.sh::../../../iso/airootfs/usr/lib/rubik/cells/fs-layout.sh"
+    "cache-io.sh::../../../iso/airootfs/usr/lib/rubik/cells/cache-io.sh"
+    "dedup.sh::../../../iso/airootfs/usr/lib/rubik/cells/dedup.sh"
+)
+sha256sums=('SKIP')
+
+package() {
+    local cells=(fs-layout cache-io dedup)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
+}

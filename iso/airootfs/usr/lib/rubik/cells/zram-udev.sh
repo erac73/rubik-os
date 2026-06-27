@@ -5,26 +5,42 @@
 # ───────────────────────────────────────────────
 set -euo pipefail
 
-ZRAM_DEV="${1:-/dev/zram0}"
+CELL_NAME="zram-udev"
+ZRAM_DEV="/dev/zram0"
 
-if [[ ! -e "$ZRAM_DEV" ]]; then
-    exit 0
+zram_setup() {
+    local dev="${1:-$ZRAM_DEV}"
+    if [[ ! -e "$dev" ]]; then
+        return 1
+    fi
+    if grep -q "zram0" /proc/swaps 2>/dev/null; then
+        return 0
+    fi
+    local total_ram
+    total_ram=$(awk '/MemTotal/{print $2}' /proc/meminfo)
+    local zram_size=$((total_ram * 75 / 100))
+    echo "${zram_size}K" > "/sys/block/$(basename "$dev")/disksize" 2>/dev/null || true
+    mkswap "$dev" 2>/dev/null || true
+    swapon -p 100 "$dev" 2>/dev/null || true
+}
+
+cell_start() {
+    zram_setup "$ZRAM_DEV"
+    echo "ZRAM $ZRAM_DEV configured"
+}
+
+cell_stop() {
+    swapoff "$ZRAM_DEV" 2>/dev/null || true
+}
+
+cell_health() {
+    grep -q "zram0" /proc/swaps 2>/dev/null && return 0
+    return 1
+}
+
+cell_deps() { echo "F0.0"; }
+
+# If executed directly (e.g. by udev rule)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    zram_setup "${1:-$ZRAM_DEV}"
 fi
-
-# Skip if face-0.sh already configured ZRAM as swap
-if grep -q "zram0" /proc/swaps 2>/dev/null; then
-    exit 0
-fi
-
-# Get total RAM in KB
-total_ram=$(awk '/MemTotal/{print $2}' /proc/meminfo)
-
-# ZRAM = 75% of total RAM
-zram_size=$((total_ram * 75 / 100))
-
-# Set ZRAM size
-echo "${zram_size}K" > "/sys/block/$(basename "$ZRAM_DEV")/disksize" 2>/dev/null || true
-
-# Format as swap
-mkswap "$ZRAM_DEV" 2>/dev/null || true
-swapon -p 100 "$ZRAM_DEV" 2>/dev/null || true

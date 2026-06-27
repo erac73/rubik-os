@@ -1,0 +1,35 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# Face 4 — UI & UX cells
+
+pkgname=rubik-face-4
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS Face 4 — UI & UX cells"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=('rubik-core' 'river' 'waybar' 'rofi' 'foot' 'dunst' 'swaybg' 'swaylock' 'wl-clipboard')
+optdepends=('pipewire: Audio support (F4.9)'
+            'display-manager: DM support (F4.10)')
+source=(
+    "wm-core.sh::../../../iso/airootfs/usr/lib/rubik/cells/wm-core.sh"
+    "bar-status.sh::../../../iso/airootfs/usr/lib/rubik/cells/bar-status.sh"
+    "launcher.sh::../../../iso/airootfs/usr/lib/rubik/cells/launcher.sh"
+    "terminal.sh::../../../iso/airootfs/usr/lib/rubik/cells/terminal.sh"
+    "compositor.sh::../../../iso/airootfs/usr/lib/rubik/cells/compositor.sh"
+    "notifier.sh::../../../iso/airootfs/usr/lib/rubik/cells/notifier.sh"
+    "wallpaper.sh::../../../iso/airootfs/usr/lib/rubik/cells/wallpaper.sh"
+    "clipboard.sh::../../../iso/airootfs/usr/lib/rubik/cells/clipboard.sh"
+    "idle-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/idle-manager.sh"
+    "pipewire.sh::../../../iso/airootfs/usr/lib/rubik/cells/pipewire.sh"
+    "display-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/display-manager.sh"
+)
+sha256sums=('SKIP')
+
+package() {
+    local cells=(wm-core bar-status launcher terminal compositor notifier
+                 wallpaper clipboard idle-manager pipewire display-manager)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
+}

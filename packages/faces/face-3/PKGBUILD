@@ -1,0 +1,27 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# Face 3 — Network & Communication cells
+
+pkgname=rubik-face-3
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS Face 3 — Network & Communication cells"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=('rubik-core' 'iwd' 'nftables' 'chrony')
+optdepends=('bluetooth: Bluetooth support (F3.9)')
+source=(
+    "proxy-tun.sh::../../../iso/airootfs/usr/lib/rubik/cells/proxy-tun.sh"
+    "net-monitor.sh::../../../iso/airootfs/usr/lib/rubik/cells/net-monitor.sh"
+    "bandwidth-limiter.sh::../../../iso/airootfs/usr/lib/rubik/cells/bandwidth-limiter.sh"
+    "bluetooth.sh::../../../iso/airootfs/usr/lib/rubik/cells/bluetooth.sh"
+    "wifi-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/wifi-manager.sh"
+)
+sha256sums=('SKIP')
+
+package() {
+    local cells=(proxy-tun net-monitor bandwidth-limiter bluetooth wifi-manager)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
+}

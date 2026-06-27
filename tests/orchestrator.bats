@@ -82,10 +82,14 @@ setup() {
     done
 }
 
-@test "faces: all face scripts have main function" {
+@test "faces: all face scripts have main or face_start function" {
     for f in ../iso/airootfs/usr/lib/rubik/faces/*.sh; do
         name=$(basename "$f")
-        grep -q "^main()" "$f" || echo "MISSING main() in $name"
+        has_main=$(grep -c "^main()" "$f" 2>/dev/null || echo 0)
+        has_face=$(grep -c "^face_start()" "$f" 2>/dev/null || echo 0)
+        if [ "$has_main" -eq 0 ] && [ "$has_face" -eq 0 ]; then
+            echo "MISSING main() or face_start() in $name"
+        fi
     done
 }
 

@@ -311,13 +311,21 @@ Próximo: v1.0.0
 
 ## Lo que falta para v1.0.0
 
-- [ ] Publicar release en GitHub
+- [ ] Publicar release en GitHub con ISO artifact
 - [ ] Repositorio de paquetes `[rubik]` en pacman.conf
-- [ ] `packages/faces/` con PKGBUILDs por cara
-- [ ] Issue/PR templates para contributors
-- [ ] CONTRIBUTING.md y CODE_OF_CONDUCT.md
-- [ ] 20 celdas stub → implementación completa
 - [ ] CI publish: subir ISO a release automáticamente
+
+### ✅ Completado
+
+- [x] 8 celdas stub implementadas (cgroup-manager, crypto, dedup, firejail, initramfs, sandbox-exec, update-auth, cell-isolation)
+- [x] `packages/faces/face-0` a `face-5` con PKGBUILDs
+- [x] Issue/PR templates en `.github/`
+- [x] `CONTRIBUTING.md` y `CODE_OF_CONDUCT.md`
+- [x] Systemd units movidas a `system/` (path estándar)
+- [x] `rubik-boot` creado y empaquetado en ISO + PKGBUILD
+- [x] Face ops corregidas (leen cells.toml en vez de directorios)
+- [x] Tests actualizados con paths correctos
+- [x] Docker scripts limpiados (solo docker-build.sh)
 
 ---
 

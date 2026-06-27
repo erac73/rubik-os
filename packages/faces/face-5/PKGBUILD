@@ -1,0 +1,29 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# Face 5 — Security & Isolation cells
+
+pkgname=rubik-face-5
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS Face 5 — Security & Isolation cells"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=('rubik-core' 'apparmor')
+optdepends=('firejail: Sandboxing (F5.5)'
+            'audit: Audit subsystem (F5.2)')
+source=(
+    "sandbox-exec.sh::../../../iso/airootfs/usr/lib/rubik/cells/sandbox-exec.sh"
+    "crypto.sh::../../../iso/airootfs/usr/lib/rubik/cells/crypto.sh"
+    "integrity.sh::../../../iso/airootfs/usr/lib/rubik/cells/integrity.sh"
+    "firejail.sh::../../../iso/airootfs/usr/lib/rubik/cells/firejail.sh"
+    "update-auth.sh::../../../iso/airootfs/usr/lib/rubik/cells/update-auth.sh"
+    "cell-isolation.sh::../../../iso/airootfs/usr/lib/rubik/cells/cell-isolation.sh"
+)
+sha256sums=('SKIP')
+
+package() {
+    local cells=(sandbox-exec crypto integrity firejail update-auth cell-isolation)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
+}

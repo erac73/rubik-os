@@ -1,0 +1,24 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# Face 1 — Processes & Services cells
+
+pkgname=rubik-face-1
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS Face 1 — Processes & Services cells"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=('rubik-core')
+source=(
+    "cgroup-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/cgroup-manager.sh"
+    "sched-tune.sh::../../../iso/airootfs/usr/lib/rubik/cells/sched-tune.sh"
+    "initramfs.sh::../../../iso/airootfs/usr/lib/rubik/cells/initramfs.sh"
+)
+sha256sums=('SKIP')
+
+package() {
+    local cells=(cgroup-manager sched-tune initramfs)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
+}

@@ -1,0 +1,30 @@
+# Maintainer: Rubik OS Team <dev@rubik-os.org>
+# Face 0 — Kernel & Memory cells
+
+pkgname=rubik-face-0
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Rubik OS Face 0 — Kernel & Memory cells"
+arch=('x86_64')
+url="https://rubik-os.org"
+license=('GPL3')
+depends=('rubik-core' 'zram-generator' 'earlyoom' 'irqbalance')
+source=(
+    "memory-compression.sh::../../../iso/airootfs/usr/lib/rubik/cells/memory-compression.sh"
+    "zram-udev.sh::../../../iso/airootfs/usr/lib/rubik/cells/zram-udev.sh"
+    "oom-guard.sh::../../../iso/airootfs/usr/lib/rubik/cells/oom-guard.sh"
+    "swap-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/swap-manager.sh"
+    "hugepages.sh::../../../iso/airootfs/usr/lib/rubik/cells/hugepages.sh"
+    "cache-tune.sh::../../../iso/airootfs/usr/lib/rubik/cells/cache-tune.sh"
+    "cpu-gov.sh::../../../iso/airootfs/usr/lib/rubik/cells/cpu-gov.sh"
+    "mem-forecast.sh::../../../iso/airootfs/usr/lib/rubik/cells/mem-forecast.sh"
+)
+sha256sums=('SKIP')
+
+package() {
+    local cells=(memory-compression zram-udev oom-guard swap-manager hugepages
+                 cache-tune cpu-gov mem-forecast)
+    for cell in "${cells[@]}"; do
+        install -Dm755 "$srcdir/${cell}.sh" "$pkgdir/usr/lib/rubik/cells/${cell}.sh"
+    done
+}
