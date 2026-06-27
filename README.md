@@ -76,7 +76,7 @@ Los sistemas operativos modernos desperdician memoria. Un Linux promedio usa **3
 | 🚀 Arranque a shell | ~15-30s | **~5-10s** | 50-65% |
 | 🚀 Arranque a GUI | ~30-60s | **~10-20s** | 55-65% |
 | 🔄 Procesos en idle | ~400-600 | **~80-150** | 60-75% |
-| 📦 Tamaño ISO | ~2-3 GB | **~500-800 MB** | 60-75% |
+| 📦 Tamaño ISO (xz) | ~2-3 GB | **~2.8 GB** | — |
 
 ## Requisitos mínimos
 
@@ -89,23 +89,28 @@ Los sistemas operativos modernos desperdician memoria. Un Linux promedio usa **3
 
 ---
 
-## Quick Start
+## Descargar
+
+Descarga la última ISO desde [GitHub Releases](https://github.com/erac73/rubik-os/releases).
 
 ```bash
-# 1. Clonar
-git clone https://github.com/erac73/rubik-os.git
-cd rubik-os
+# Descargar partes
+wget https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_aa
+wget https://github.com/erac73/rubik-os/releases/download/v1.0.0/rubik-os-20260627-x86_64.iso.xz.part_ab
 
-# 2. Construir la ISO (requiere Arch Linux o contenedor)
-sudo ./scripts/build-iso.sh
+# Reconstruir
+cat rubik-os-*.iso.xz.part_* > rubik-os-20260627-x86_64.iso.xz
+xz -d rubik-os-20260627-x86_64.iso.xz
 
-# 3. La ISO está lista
-ls -lh out/rubik-os-*.iso
+# Lista — ISO reconstruida
+ls -lh rubik-os-*.iso
 ```
 
 ### O construir en Docker
 
 ```bash
+git clone https://github.com/erac73/rubik-os.git
+cd rubik-os
 ./scripts/docker-build.sh
 ```
 
@@ -261,7 +266,7 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 
 ## Estado del proyecto
 
-| Componente | v0.8 |
+| Componente | v1.0.0 |
 |---|---|---|
 | Scripts de celda | **36** |
 | Scripts de cara | **6/6** (100%) |
@@ -288,7 +293,7 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 | Impresión | CUPS + HPLIP + SANE |
 | Licencia | GPLv3 |
 
-Próximo: v1.0.0
+Próximo: v1.1.0
 
 ---
 
@@ -309,14 +314,15 @@ Próximo: v1.0.0
 
 ---
 
-## Lo que falta para v1.0.0
+## Lo que falta para v1.1.0
 
-- [ ] Publicar release en GitHub con ISO artifact
 - [ ] Repositorio de paquetes `[rubik]` en pacman.conf
 - [ ] CI publish: subir ISO a release automáticamente
+- [ ] Reducir tamaño de ISO
 
-### ✅ Completado
+### ✅ v1.0.0 — Completado
 
+- [x] ISO booteable construida y publicada en GitHub Releases
 - [x] 8 celdas stub implementadas (cgroup-manager, crypto, dedup, firejail, initramfs, sandbox-exec, update-auth, cell-isolation)
 - [x] `packages/faces/face-0` a `face-5` con PKGBUILDs
 - [x] Issue/PR templates en `.github/`
