@@ -106,6 +106,21 @@ xz -d rubik-os-20260627-x86_64.iso.xz
 ls -lh rubik-os-*.iso
 ```
 
+### Repositorio de paquetes
+
+Rubik OS tiene su propio repositorio de paquetes. Agregalo a tu `/etc/pacman.conf`:
+
+```ini
+[rubik]
+Server = https://erac73.github.io/rubik-os/repo/$arch
+```
+
+```bash
+pacman -Sy rubik-core
+```
+
+Paquetes disponibles: `rubik-core`, `rubik-face-0` a `rubik-face-5`.
+
 ### O construir en Docker
 
 ```bash

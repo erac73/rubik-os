@@ -12,19 +12,29 @@ depends=('rubik-core' 'river' 'waybar' 'rofi' 'foot' 'dunst' 'swaybg' 'swaylock'
 optdepends=('pipewire: Audio support (F4.9)'
             'display-manager: DM support (F4.10)')
 source=(
-    "wm-core.sh::../../../iso/airootfs/usr/lib/rubik/cells/wm-core.sh"
-    "bar-status.sh::../../../iso/airootfs/usr/lib/rubik/cells/bar-status.sh"
-    "launcher.sh::../../../iso/airootfs/usr/lib/rubik/cells/launcher.sh"
-    "terminal.sh::../../../iso/airootfs/usr/lib/rubik/cells/terminal.sh"
-    "compositor.sh::../../../iso/airootfs/usr/lib/rubik/cells/compositor.sh"
-    "notifier.sh::../../../iso/airootfs/usr/lib/rubik/cells/notifier.sh"
-    "wallpaper.sh::../../../iso/airootfs/usr/lib/rubik/cells/wallpaper.sh"
-    "clipboard.sh::../../../iso/airootfs/usr/lib/rubik/cells/clipboard.sh"
-    "idle-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/idle-manager.sh"
-    "pipewire.sh::../../../iso/airootfs/usr/lib/rubik/cells/pipewire.sh"
-    "display-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/display-manager.sh"
+    "wm-core.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/wm-core.sh"
+    "bar-status.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/bar-status.sh"
+    "launcher.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/launcher.sh"
+    "terminal.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/terminal.sh"
+    "compositor.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/compositor.sh"
+    "notifier.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/notifier.sh"
+    "wallpaper.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/wallpaper.sh"
+    "clipboard.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/clipboard.sh"
+    "idle-manager.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/idle-manager.sh"
+    "pipewire.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/pipewire.sh"
+    "display-manager.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/display-manager.sh"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
 
 package() {
     local cells=(wm-core bar-status launcher terminal compositor notifier

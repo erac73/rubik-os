@@ -12,14 +12,19 @@ depends=('rubik-core' 'apparmor')
 optdepends=('firejail: Sandboxing (F5.5)'
             'audit: Audit subsystem (F5.2)')
 source=(
-    "sandbox-exec.sh::../../../iso/airootfs/usr/lib/rubik/cells/sandbox-exec.sh"
-    "crypto.sh::../../../iso/airootfs/usr/lib/rubik/cells/crypto.sh"
-    "integrity.sh::../../../iso/airootfs/usr/lib/rubik/cells/integrity.sh"
-    "firejail.sh::../../../iso/airootfs/usr/lib/rubik/cells/firejail.sh"
-    "update-auth.sh::../../../iso/airootfs/usr/lib/rubik/cells/update-auth.sh"
-    "cell-isolation.sh::../../../iso/airootfs/usr/lib/rubik/cells/cell-isolation.sh"
+    "sandbox-exec.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/sandbox-exec.sh"
+    "crypto.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/crypto.sh"
+    "integrity.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/integrity.sh"
+    "firejail.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/firejail.sh"
+    "update-auth.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/update-auth.sh"
+    "cell-isolation.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/cell-isolation.sh"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
 
 package() {
     local cells=(sandbox-exec crypto integrity firejail update-auth cell-isolation)

@@ -19,19 +19,16 @@ binutils
 bison
 flex
 gcc
-gdb
 glibc
 libtool
 make
 m4
 patch
 pkgconf
-texinfo
 
 # ── Filesystem & Storage ───────────────────────
 btrfs-progs
 cryptsetup
-dmraid
 dosfstools
 e2fsprogs
 exfatprogs
@@ -51,17 +48,10 @@ wireless-regdb
 wireless_tools
 iw
 dhcpcd
-dnsmasq
 iproute2
 iptables-nft
 nftables
-openvpn
-wireguard-tools
-strongswan
-bind
 ethtool
-tcpdump
-nmap
 net-tools
 
 # ── Bluetooth ──────────────────────────────────
@@ -75,14 +65,10 @@ piper
 pipewire
 pipewire-pulse
 pipewire-alsa
-pipewire-jack
 wireplumber
 alsa-utils
 alsa-firmware
-alsa-plugins
 sof-firmware
-helvum
-easyeffects
 
 # ── GPU & Display ──────────────────────────────
 mesa
@@ -92,43 +78,29 @@ libva-mesa-driver
 vulkan-icd-loader
 vulkan-intel
 vulkan-radeon
-nvidia-open-dkms
 nvidia-utils
-nvidia-settings
 xf86-video-intel
 xf86-video-amdgpu
 xf86-video-nouveau
 xf86-video-vesa
 xf86-input-libinput
-xf86-input-evdev
 xorg-server
 xorg-xinit
 xorg-xrandr
-xorg-xrdb
-xorg-xset
-xorg-xdpyinfo
 xorg-xwayland
 wayland
 wayland-utils
-weston
 
 # ── Window Managers (Rubik OS F4) ──────────────
 river
-hyprland
-sway
 waybar
 rofi
-wofi
-dmenu
 foot
-alacritty
-kitty
 dunst
 mako
 swaybg
 swaylock
 swayidle
-swaync
 grim
 slurp
 wl-clipboard
@@ -138,27 +110,12 @@ brightnessctl
 ttf-dejavu
 ttf-liberation
 ttf-font-awesome
-ttf-jetbrains-mono
-ttf-fira-code
-ttf-nerd-fonts-symbols
 noto-fonts
-noto-fonts-cjk
 noto-fonts-emoji
-adobe-source-code-pro-fonts
-cantarell-fonts
 papirus-icon-theme
-breeze-icons
-gnome-themes-extra
 
 # ── Printing & Scanning ────────────────────────
 cups
-cups-pdf
-cups-filters
-hplip
-sane
-sane-airscan
-simple-scan
-system-config-printer
 
 # ── Power Management ───────────────────────────
 tlp
@@ -208,11 +165,9 @@ curl
 wget
 git
 openssh
-rsync
 sbctl
 sdparm
 smartmontools
-testdisk
 os-prober
 edk2-shell
 terminus-font
@@ -221,25 +176,10 @@ terminus-font
 apparmor
 audit
 firejail
-fail2ban
-lynis
-rkhunter
-clamav
 ufw
-gufw
 
 # ── Development Tools ──────────────────────────
 python
-python-pip
-python-setuptools
-ruby
 perl
-lua
-nodejs
-npm
-go
-rust
-fish
-zsh
 
 

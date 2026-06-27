@@ -10,16 +10,23 @@ url="https://rubik-os.org"
 license=('GPL3')
 depends=('rubik-core' 'zram-generator' 'earlyoom' 'irqbalance')
 source=(
-    "memory-compression.sh::../../../iso/airootfs/usr/lib/rubik/cells/memory-compression.sh"
-    "zram-udev.sh::../../../iso/airootfs/usr/lib/rubik/cells/zram-udev.sh"
-    "oom-guard.sh::../../../iso/airootfs/usr/lib/rubik/cells/oom-guard.sh"
-    "swap-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/swap-manager.sh"
-    "hugepages.sh::../../../iso/airootfs/usr/lib/rubik/cells/hugepages.sh"
-    "cache-tune.sh::../../../iso/airootfs/usr/lib/rubik/cells/cache-tune.sh"
-    "cpu-gov.sh::../../../iso/airootfs/usr/lib/rubik/cells/cpu-gov.sh"
-    "mem-forecast.sh::../../../iso/airootfs/usr/lib/rubik/cells/mem-forecast.sh"
+    "memory-compression.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/memory-compression.sh"
+    "zram-udev.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/zram-udev.sh"
+    "oom-guard.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/oom-guard.sh"
+    "swap-manager.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/swap-manager.sh"
+    "hugepages.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/hugepages.sh"
+    "cache-tune.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/cache-tune.sh"
+    "cpu-gov.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/cpu-gov.sh"
+    "mem-forecast.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/mem-forecast.sh"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
 
 package() {
     local cells=(memory-compression zram-udev oom-guard swap-manager hugepages

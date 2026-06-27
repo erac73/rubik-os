@@ -262,6 +262,11 @@ configure_system() {
         read -rp "Username: " INSTALL_USER
     fi
 
+    # Add Rubik OS repo to installed system's pacman.conf
+    echo "[rubik]" >> /mnt/etc/pacman.conf
+    echo "Server = https://erac73.github.io/rubik-os/repo/\$arch" >> /mnt/etc/pacman.conf
+    echo "" >> /mnt/etc/pacman.conf
+
     # Chroot and configure
     arch-chroot /mnt /bin/bash << CHROOT
         # Timezone

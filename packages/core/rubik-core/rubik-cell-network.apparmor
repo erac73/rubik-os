@@ -1,0 +1,35 @@
+# ------------------------------------------------------------------
+# AppArmor profile for Rubik OS network cells (F3)
+# Stricter profile for network-facing cells
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+profile rubik-cell-network /usr/lib/rubik/cells/{net-monitor,proxy-tun,bandwidth-limiter}.sh {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+
+  /usr/lib/rubik/cells/{net-monitor,proxy-tun,bandwidth-limiter}.sh rix,
+
+  # Network configuration
+  /proc/sys/net/**               rw,
+  /sys/class/net/**              r,
+
+  # Traffic control
+  /sbin/tc                       ix,
+  /usr/sbin/tc                   ix,
+
+  # DNS resolution
+  /etc/resolv.conf               r,
+  /etc/hosts                     r,
+  /etc/nsswitch.conf             r,
+
+  # Strict deny all network by default
+  deny network tcp,
+  deny network udp,
+  deny network raw,
+
+  deny /etc/shadow               r,
+  deny /home/**                  r,
+  deny capability sys_module,
+}

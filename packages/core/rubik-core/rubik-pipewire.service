@@ -1,0 +1,19 @@
+[Unit]
+Description=Rubik OS PipeWire Audio Server
+Documentation=https://rubik-os.org/docs/audio
+After=rubikd.service
+Requires=rubikd.service
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/pipewire
+ExecStartPost=/usr/bin/pipewire-pulse
+Restart=on-failure
+RestartSec=2
+MemoryMax=128M
+CPUAccounting=yes
+MemoryAccounting=yes
+
+[Install]
+WantedBy=rubik.target

@@ -10,11 +10,13 @@ url="https://rubik-os.org"
 license=('GPL3')
 depends=('rubik-core' 'btrfs-progs' 'duperemove')
 source=(
-    "fs-layout.sh::../../../iso/airootfs/usr/lib/rubik/cells/fs-layout.sh"
-    "cache-io.sh::../../../iso/airootfs/usr/lib/rubik/cells/cache-io.sh"
-    "dedup.sh::../../../iso/airootfs/usr/lib/rubik/cells/dedup.sh"
+    "fs-layout.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/fs-layout.sh"
+    "cache-io.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/cache-io.sh"
+    "dedup.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/dedup.sh"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
 
 package() {
     local cells=(fs-layout cache-io dedup)

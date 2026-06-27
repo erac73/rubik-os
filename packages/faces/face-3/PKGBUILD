@@ -11,13 +11,17 @@ license=('GPL3')
 depends=('rubik-core' 'iwd' 'nftables' 'chrony')
 optdepends=('bluetooth: Bluetooth support (F3.9)')
 source=(
-    "proxy-tun.sh::../../../iso/airootfs/usr/lib/rubik/cells/proxy-tun.sh"
-    "net-monitor.sh::../../../iso/airootfs/usr/lib/rubik/cells/net-monitor.sh"
-    "bandwidth-limiter.sh::../../../iso/airootfs/usr/lib/rubik/cells/bandwidth-limiter.sh"
-    "bluetooth.sh::../../../iso/airootfs/usr/lib/rubik/cells/bluetooth.sh"
-    "wifi-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/wifi-manager.sh"
+    "proxy-tun.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/proxy-tun.sh"
+    "net-monitor.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/net-monitor.sh"
+    "bandwidth-limiter.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/bandwidth-limiter.sh"
+    "bluetooth.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/bluetooth.sh"
+    "wifi-manager.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/wifi-manager.sh"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
 
 package() {
     local cells=(proxy-tun net-monitor bandwidth-limiter bluetooth wifi-manager)

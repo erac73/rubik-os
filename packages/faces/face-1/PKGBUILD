@@ -10,11 +10,13 @@ url="https://rubik-os.org"
 license=('GPL3')
 depends=('rubik-core')
 source=(
-    "cgroup-manager.sh::../../../iso/airootfs/usr/lib/rubik/cells/cgroup-manager.sh"
-    "sched-tune.sh::../../../iso/airootfs/usr/lib/rubik/cells/sched-tune.sh"
-    "initramfs.sh::../../../iso/airootfs/usr/lib/rubik/cells/initramfs.sh"
+    "cgroup-manager.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/cgroup-manager.sh"
+    "sched-tune.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/sched-tune.sh"
+    "initramfs.sh::file:///rubik-os/iso/airootfs/usr/lib/rubik/cells/initramfs.sh"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
 
 package() {
     local cells=(cgroup-manager sched-tune initramfs)

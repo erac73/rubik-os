@@ -1,0 +1,37 @@
+# ------------------------------------------------------------------
+# AppArmor profile for Rubik OS security cells (F5)
+# Most restricted profile - crypto and integrity operations
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+profile rubik-cell-security /usr/lib/rubik/cells/{crypto,integrity,sandbox-exec,cell-isolation}.sh {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+
+  /usr/lib/rubik/cells/{crypto,integrity,sandbox-exec,cell-isolation}.sh rix,
+
+  # Crypto modules
+  /sbin/modprobe                 ix,
+  /usr/sbin/modprobe             ix,
+  /sbin/lsmod                    ix,
+  /usr/sbin/lsmod                ix,
+  /proc/modules                  r,
+
+  # Audit
+  /var/log/audit/                rw,
+  /var/log/audit/**              rw,
+
+  # Sysctl for kernel hardening
+  /proc/sys/kernel/**            rw,
+
+  # Cgroup management
+  /sys/fs/cgroup/rubik/          rw,
+  /sys/fs/cgroup/rubik/**        rw,
+
+  deny network,
+  deny /home/**                  r,
+  deny /tmp/**                   rw,
+  deny capability sys_admin,
+  deny capability sys_module,
+}

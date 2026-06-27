@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────
+# rubik-recovery — Rubik OS Recovery & Rescue Mode
+# Handles system recovery, fallback boot,
+# cell rollback, and filesystem repair.
+# ───────────────────────────────────────────────
+set -euo pipefail
+
+RED='\e[31m'; GREEN='\e[32m'; YELLOW='\e[33m'; CYAN='\e[36m'; BOLD='\e[1m'; NC='\e[0m'
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+header(){ echo -e "\n${CYAN}══ $1 ══${NC}\n"; }
+
+RECOVERY_DIR="/var/lib/rubik/recovery"
+SNAPSHOT_DIR="/.snapshots"
+
+# ── Cell Rollback ────────────────────────────
+rollback_cell() {
+    local cell_name="${1:?Missing cell name}"
+    local snapshot="${2:-latest}"
+    header "Rolling back cell: $cell_name"
+
+    local cell_file="/usr/lib/rubik/cells/$cell_name.sh"
+    local backup_dir="$RECOVERY_DIR/cells"
+    mkdir -p "$backup_dir"
+
+    if [[ "$snapshot" == "latest" && -f "$backup_dir/$cell_name.sh.bak" ]]; then
+        cp "$backup_dir/$cell_name.sh.bak" "$cell_file"
+        log "Cell $cell_name restored from backup"
+    elif [[ -f "$backup_dir/$cell_name.sh.$snapshot" ]]; then
+        cp "$backup_dir/$cell_name.sh.$snapshot" "$cell_file"
+        log "Cell $cell_name restored from snapshot $snapshot"
+    else
+        error "No backup found for $cell_name"
+    fi
+}
+
+# ── Snapshot Cell State ──────────────────────
+snapshot_cell() {
+    local cell_name="${1:?Missing cell name}"
+    header "Snapshotting cell: $cell_name"
+
+    local cell_file="/usr/lib/rubik/cells/$cell_name.sh"
+    local backup_dir="$RECOVERY_DIR/cells"
+    mkdir -p "$backup_dir"
+
+    local timestamp
+    timestamp=$(date +%Y%m%d-%H%M%S)
+    cp "$cell_file" "$backup_dir/$cell_name.sh.$timestamp"
+    # Also keep latest
+    cp "$cell_file" "$backup_dir/$cell_name.sh.bak"
+    log "Snapshotted $cell_name at $timestamp"
+}
+
+# ── Filesystem Check ─────────────────────────
+fs_check() {
+    header "Filesystem Check"
+    local dev="${1:-}"
+    if [[ -z "$dev" ]]; then
+        for part in /dev/sd?[0-9] /dev/nvme?n?p[0-9]; do
+            [[ -b "$part" ]] || continue
+            local fstype
+            fstype=$(blkid -o value -s TYPE "$part" 2>/dev/null || echo "")
+            if [[ "$fstype" == "btrfs" || "$fstype" == "ext4" ]]; then
+                echo "  Checking $part ($fstype)..."
+                if [[ "$fstype" == "btrfs" ]]; then
+                    btrfs check "$part" 2>/dev/null && log "$part OK" || warn "$part has errors"
+                else
+                    fsck -n "$part" 2>/dev/null && log "$part OK" || warn "$part has errors"
+                fi
+            fi
+        done
+    else
+        fsck -n "$dev" 2>/dev/null && log "$dev OK" || warn "$dev has errors"
+    fi
+}
+
+# ── Fallback Boot ────────────────────────────
+fallback_boot() {
+    header "Fallback Boot Mode"
+    echo "  Starting Rubik OS in minimal/rescue mode..."
+    echo ""
+    echo "  This mode starts only:"
+    echo "    - F0.0 (kernel) — critical system base"
+    echo "    - F1.0 (rubikd) — cell orchestrator (limited)"
+    echo "    - F5.0 (apparmor) — security"
+    echo ""
+    echo "  To start additional cells after boot:"
+    echo "    rubikctl cell start <cell-name>"
+    echo "    rubikctl face rotate <face-number>"
+    echo ""
+}
+
+# ── Regenerate Initramfs ─────────────────────
+regenerate_initramfs() {
+    header "Regenerating Initramfs"
+    if command -v mkinitcpio &>/dev/null; then
+        mkinitcpio -P
+        log "Initramfs regenerated"
+    else
+        warn "mkinitcpio not found"
+    fi
+}
+
+# ── Main ─────────────────────────────────────
+main() {
+    header "Rubik OS Recovery Tools"
+
+    case "${1:-help}" in
+        rollback)
+            rollback_cell "${2:-}" "${3:-}"
+            ;;
+        snapshot)
+            snapshot_cell "${2:-}"
+            ;;
+        fsck|fs-check)
+            fs_check "${2:-}"
+            ;;
+        fallback)
+            fallback_boot
+            ;;
+        initramfs)
+            regenerate_initramfs
+            ;;
+        help|--help|-h)
+            echo "Usage: rubik-recovery COMMAND [args]"
+            echo ""
+            echo "Commands:"
+            echo "  rollback <cell> [snapshot]  Roll back a cell to previous version"
+            echo "  snapshot <cell>             Snapshot current cell state"
+            echo "  fsck [device]               Check filesystem(s) for errors"
+            echo "  fallback                    Boot into minimal rescue mode"
+            echo "  initramfs                   Regenerate initramfs"
+            echo ""
+            echo "Recovery files stored in: $RECOVERY_DIR"
+            echo "Snapshots: $SNAPSHOT_DIR"
+            ;;
+        *)
+            error "Unknown command: $1"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
