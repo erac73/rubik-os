@@ -1,14 +1,12 @@
 # Rubik OS
 
-> **Optimizada para memoria. Arquitectura descentralizada. Inspirada en el Cubo Rubik.**  
+> **Optimizada para memoria. Arquitectura descentralizada. Inspirada en el Cubo Rubik.**
 > Una distribución Linux basada en Arch para equipos con pocos recursos.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Arch Linux](https://img.shields.io/badge/Base-Arch_Linux-1793D1?logo=arch-linux&logoColor=white)](https://archlinux.org)
-[![ISO Build](https://img.shields.io/badge/Build-ArchISO-green)](https://wiki.archlinux.org/title/Archiso)
 [![RAM Idle](https://img.shields.io/badge/RAM_idle-80%E2%80%93120_MB-success)]()
 [![CI](https://github.com/erac73/rubik-os/actions/workflows/ci.yml/badge.svg)](https://github.com/erac73/rubik-os/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/github/v/release/erac73/rubik-os)](https://github.com/erac73/rubik-os/releases)
 
 <p align="center">
   <img src="assets/logo.svg" alt="Rubik OS Logo" width="256" height="256">
@@ -53,11 +51,11 @@ Los sistemas operativos modernos desperdician memoria. Un Linux promedio usa **3
 | **F0** | Kernel & Memoria | 9 | ZRAM, earlyOOM, IRQ balance, CPU governor, predicción de memoria |
 | **F1** | Procesos & Servicios | 9 | RubikD orchestrator, cgroups, scheduler tuning, init mínimo |
 | **F2** | Almacenamiento | 9 | Btrfs subvolumes, tmpfs, trim, dedup, mount manager |
-| **F3** | Red & Comunicación | 9 | iwd (wifi), nftables, DNS cache, chrony, bandwidth limiter |
-| **F4** | Interfaz & Experiencia | 9 | River WM, waybar, foot terminal, mako notificaciones |
+| **F3** | Red & Comunicación | 11 | iwd (wifi), nftables, DNS cache, chrony, bandwidth limiter, bluetooth |
+| **F4** | Interfaz & Experiencia | 11 | River WM, waybar, foot terminal, mako notificaciones, pipewire |
 | **F5** | Seguridad & Aislamiento | 9 | AppArmor, bubblewrap, LUKS, cell isolation, audit |
 
-**54 celdas atómicas. 6 caras. 1 sistema.**
+**56 celdas atómicas. 6 caras. 1 sistema.**
 
 ---
 
@@ -95,6 +93,12 @@ sudo ./scripts/build-iso.sh
 
 # 3. La ISO está lista
 ls -lh out/rubik-os-*.iso
+```
+
+### O construir en Docker
+
+```bash
+./scripts/docker-build.sh
 ```
 
 ### O instalar desde cero
@@ -157,24 +161,52 @@ Cada celda es un proceso/servicio independiente con:
 
 ```
 rubik-os/
-├── 📁 docs/
-│   ├── architecture/        # 7 documentos de arquitectura
-│   └── faces/               # Documentación por cara
-├── 📁 iso/
-│   ├── airootfs/            # Sistema raíz de la ISO
-│   ├── archiso/             # Configuración ArchISO
-│   └── profiledef.sh        # Perfil de construcción
-├── 📁 packages/
-│   └── core/                # PKGBUILD del sistema base
-├── 📁 scripts/
-│   ├── build-iso.sh         # Construye la ISO
-│   ├── rubik-orchestrator   # Orquestador de celdas (rubikctl)
-│   ├── rubik-install        # Instalador interactivo
-│   └── rubik-init           # Init del sistema
-├── 📁 tests/
-│   └── test-zram.sh         # Tests de validación
-├── 📁 assets/
-│   └── logo.svg             # Logo oficial (SVG vectorial)
+├── iso/                          # Perfil de ArchISO
+│   ├── airootfs/                 # Sistema de archivos raíz del live ISO
+│   │   ├── etc/                  # Configuración del sistema
+│   │   │   ├── apparmor.d/       # Perfiles AppArmor
+│   │   │   ├── rubik/            # Configuración de Rubik OS (cells.toml)
+│   │   │   ├── rsyslog.d/        # Logging
+│   │   │   ├── logrotate.d/      # Rotación de logs
+│   │   │   └── sysctl.d/         # Parámetros del kernel
+│   │   └── usr/
+│   │       ├── bin/              # Scripts del sistema (rubikd, rubikctl, etc.)
+│   │       ├── lib/
+│   │       │   ├── rubik/
+│   │       │   │   ├── cells/    # 36 scripts de celda
+│   │       │   │   └── faces/    # 6 scripts de cara
+│   │       │   └── systemd/
+│   │       │       └── system/   # 8 units systemd
+│   │       └── share/
+│   │           ├── grub/         # Tema GRUB
+│   │           └── rubik/        # Completions, assets
+│   ├── grub/                     # Configuración GRUB para la ISO
+│   ├── profiledef.sh             # Perfil de mkarchiso
+│   ├── packages.x86_64           # Paquetes del live ISO
+│   └── pacman.conf               # Configuración de pacman para la ISO
+├── scripts/                      # Scripts del sistema
+│   ├── rubik-orchestrator        # Orquestador de celdas (rubikd/rubikctl)
+│   ├── rubik-install             # Instalador del sistema
+│   ├── rubik-init                # Inicialización del sistema
+│   ├── rubik-network             # Gestor de red
+│   ├── rubik-recovery            # Herramientas de recuperación
+│   ├── rubik-bench               # Benchmarks
+│   ├── rubik-boot                # Bootloader helper
+│   ├── rubik-configure           # Configuración post-instalación
+│   ├── build-iso.sh              # Script de build ISO
+│   ├── qemu-test.sh              # Test en QEMU
+│   └── docker-build.sh           # Build ISO en Docker
+├── packages/                     # PKGBUILDs
+│   └── core/rubik-core/          # Paquete rubik-core
+├── tests/                        # Tests bats
+│   ├── orchestrator.bats         # 30+ tests
+│   └── test-zram.sh
+├── docs/                         # Documentación
+│   ├── architecture/             # 7 documentos de arquitectura
+│   └── faces/                    # Documentación por cara
+├── assets/
+│   └── logo.svg                  # Logo oficial (SVG vectorial)
+├── .github/workflows/            # CI/CD (lint, tests, build-check, docker-build)
 ├── README.md
 └── LICENSE
 ```
@@ -204,16 +236,16 @@ Cada celda es reemplazable sin reiniciar. Como un Cubo Rubik: gira la cara que q
 
 ## Estado del proyecto
 
-| Componente | v0.7 |
+| Componente | v0.8 |
 |---|---|---|
-| Scripts de celda | **36** (32 originales + bluetooth, pipewire, display-manager, wifi-manager) |
+| Scripts de celda | **36** |
 | Scripts de cara | **6/6** (100%) |
 | Systemd units | **8** (rubikd, rubik-cell@, rubik-face@, rubik.target, rubik-bluetooth, rubik-pipewire, rubik-wireplumber, rubik-wifi) |
 | AppArmor profiles | **3** (rubik-cell, rubik-cell-network, rubik-cell-security) |
-| Scripts de sistema | **rubik-network**, **rubik-recovery**, **rubik-bench**, **rubik-configure** |
-| Orquestador | daemon mode, bootstrap, validate, health checks, shutdown |
+| Scripts de sistema | **rubik-network**, **rubik-recovery**, **rubik-bench**, **rubik-configure**, **rubik-boot** |
+| Orquestador | daemon mode, bootstrap, validate, health checks, shutdown, face ops |
 | Tests | **30+** tests bats |
-| CI/CD | GitHub Actions (shellcheck, validación, tests, integridad) |
+| CI/CD | GitHub Actions (shellcheck, validación, tests, integridad, build ISO en Docker) |
 | Instalador | Interactivo + `--yes --disk=/dev/sda` + validación pre-instalación |
 | Logging | rsyslog + logrotate por face |
 | Shell completion | bash (rubikctl + rubikd) |
@@ -240,14 +272,7 @@ Próximo: v1.0.0
 ### Build ISO en Docker
 
 ```bash
-# Construir la ISO dentro de un contenedor Arch Linux
-docker run --rm --privileged `
-    -v "$(pwd):/rubik-os" `
-    archlinux:latest bash -c @"
-    pacman -Syu --noconfirm && pacman -S --noconfirm archiso squashfs-tools
-    cd /rubik-os
-    mkarchiso -v -w /tmp/work -o /rubik-os/out iso/
-"@
+./scripts/docker-build.sh
 ```
 
 ### Test ISO en QEMU
@@ -257,47 +282,17 @@ docker run --rm --privileged `
 ./scripts/qemu-test.sh out/rubik-os-*.iso bios 4096  # BIOS con 4GB
 ```
 
-### Estructura del proyecto
+---
 
-```
-rubik-os/
-├── iso/                          # Perfil de ArchISO
-│   ├── airootfs/                 # Sistema de archivos raíz del live ISO
-│   │   ├── etc/                  # Configuración del sistema
-│   │   │   ├── apparmor.d/       # Perfiles AppArmor
-│   │   │   ├── rubik/            # Configuración de Rubik OS
-│   │   │   ├── rsyslog.d/        # Logging
-│   │   │   ├── logrotate.d/      # Rotación de logs
-│   │   │   └── sysctl.d/         # Parámetros del kernel
-│   │   └── usr/
-│   │       ├── lib/
-│   │       │   ├── rubik/
-│   │       │   │   ├── cells/    # 32 scripts de celda
-│   │       │   │   └── faces/    # 6 scripts de cara
-│   │       │   └── systemd/
-│   │       │       └── rubik-services/  # Units systemd
-│   │       └── share/
-│   │           ├── grub/         # Tema GRUB
-│   │           └── rubik/        # Completions, assets
-│   ├── profiledef.sh             # Perfil de mkarchiso
-│   └── packages.x86_64           # Paquetes del live ISO
-├── scripts/                      # Scripts del sistema
-│   ├── rubik-orchestrator        # Orquestador de celdas (rubikd/rubikctl)
-│   ├── rubik-install             # Instalador del sistema
-│   ├── rubik-init                # Inicialización del sistema
-│   ├── rubik-network             # Gestor de red
-│   ├── rubik-recovery            # Herramientas de recuperación
-│   ├── rubik-bench               # Benchmarks
-│   ├── rubik-boot                # Bootloader helper
-│   ├── build-iso.sh              # Script de build ISO
-│   └── qemu-test.sh              # Test en QEMU
-├── packages/                     # PKGBUILDs
-│   └── core/rubik-core/          # Paquete rubik-core
-├── tests/                        # Tests bats
-│   └── orchestrator.bats         # 30+ tests
-├── .github/workflows/            # CI/CD
-└── out/                          # Output de build (ISO, reports)
-```
+## Lo que falta para v1.0.0
+
+- [ ] Publicar release en GitHub
+- [ ] Repositorio de paquetes `[rubik]` en pacman.conf
+- [ ] `packages/faces/` con PKGBUILDs por cara
+- [ ] Issue/PR templates para contributors
+- [ ] CONTRIBUTING.md y CODE_OF_CONDUCT.md
+- [ ] 20 celdas stub → implementación completa
+- [ ] CI publish: subir ISO a release automáticamente
 
 ---
 

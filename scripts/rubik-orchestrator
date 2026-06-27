@@ -153,15 +153,24 @@ _orch_list_cells() {
 }
 
 # ── Face Operations ─────────────────────────────
+_orch_face_cells() {
+    local face="$1"
+    awk -F'.' '/^\[cell\.'"$face"'\./ { gsub(/\[cell\./,""); gsub(/\]/,""); split($0,a,"."); print a[1]"."a[2] }' "$CELLS_TOML" 2>/dev/null | sort -u
+}
+
 _orch_face_rotate() {
     local face="$1"
     log "Rotating all cells in face '$face'..."
-    for cell_file in "$RUBIK_ROOT/faces/$face/"*.sh; do
-        if [[ -f "$cell_file" ]]; then
-            local cell_name
-            cell_name="$(basename "$cell_file" .sh)"
-            _orch_cell_rotate "$cell_name"
-        fi
+    local cells
+    cells=$(_orch_face_cells "$face")
+    if [[ -z "$cells" ]]; then
+        warn "No cells found for face '$face'"
+        return 1
+    fi
+    for cell_id in $cells; do
+        local cell_name
+        cell_name=$(echo "$cell_id" | sed 's/.*\.//')
+        _orch_cell_rotate "$cell_name"
     done
     log "Face '$face' fully rotated"
 }
@@ -170,14 +179,18 @@ _orch_face_status() {
     local face="$1"
     echo -e "${BOLD}Face $face Status${NC}"
     echo "──────────────────────────────────────"
-    for cell_file in "$RUBIK_ROOT/faces/$face/"*.sh; do
-        if [[ -f "$cell_file" ]]; then
-            local cell_name
-            cell_name="$(basename "$cell_file" .sh)"
-            local status
-            status=$(_orch_cell_status "$cell_name")
-            echo "  $cell_name: $status"
-        fi
+    local cells
+    cells=$(_orch_face_cells "$face")
+    if [[ -z "$cells" ]]; then
+        warn "No cells found for face '$face'"
+        return 1
+    fi
+    for cell_id in $cells; do
+        local cell_name
+        cell_name=$(echo "$cell_id" | sed 's/.*\.//')
+        local status
+        status=$(_orch_cell_status "$cell_name")
+        echo "  $cell_name: $status"
     done
 }
 

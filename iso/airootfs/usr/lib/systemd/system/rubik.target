@@ -1,5 +1,5 @@
 [Unit]
-Description=Rubik OS — All cells and faces
+Description=Rubik OS ? All cells and faces
 Documentation=https://rubik-os.org/docs
 Requires=rubikd.service
 After=rubikd.service

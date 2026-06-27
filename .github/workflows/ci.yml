@@ -89,14 +89,14 @@ jobs:
             iso/airootfs/etc/rubik/cells.toml \
             iso/airootfs/etc/sysctl.d/90-rubik-memory.conf \
             iso/airootfs/etc/sysctl.d/99-rubik-security.conf \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubikd.service \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik-cell@.service \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik-face@.service \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik.target \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik-bluetooth.service \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik-pipewire.service \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik-wireplumber.service \
-            iso/airootfs/usr/lib/systemd/rubik-services/rubik-wifi.service \
+            iso/airootfs/usr/lib/systemd/system/rubikd.service \
+            iso/airootfs/usr/lib/systemd/system/rubik-cell@.service \
+            iso/airootfs/usr/lib/systemd/system/rubik-face@.service \
+            iso/airootfs/usr/lib/systemd/system/rubik.target \
+            iso/airootfs/usr/lib/systemd/system/rubik-bluetooth.service \
+            iso/airootfs/usr/lib/systemd/system/rubik-pipewire.service \
+            iso/airootfs/usr/lib/systemd/system/rubik-wireplumber.service \
+            iso/airootfs/usr/lib/systemd/system/rubik-wifi.service \
             scripts/rubik-network \
             scripts/rubik-recovery \
             scripts/rubik-bench \
