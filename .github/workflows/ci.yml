@@ -97,6 +97,11 @@ jobs:
             iso/airootfs/usr/lib/systemd/system/rubik-pipewire.service \
             iso/airootfs/usr/lib/systemd/system/rubik-wireplumber.service \
             iso/airootfs/usr/lib/systemd/system/rubik-wifi.service \
+            iso/airootfs/usr/bin/rubik-bench \
+            iso/airootfs/usr/bin/rubik-boot \
+            iso/airootfs/usr/bin/rubik-configure \
+            iso/airootfs/usr/bin/rubik-network \
+            iso/airootfs/usr/bin/rubik-recovery \
             scripts/rubik-network \
             scripts/rubik-recovery \
             scripts/rubik-bench \
@@ -108,6 +113,14 @@ jobs:
             iso/airootfs/etc/rsyslog.d/30-rubik.conf \
             iso/airootfs/etc/logrotate.d/rubik \
             packages/core/rubik-core/PKGBUILD \
+            packages/faces/face-0/PKGBUILD \
+            packages/faces/face-1/PKGBUILD \
+            packages/faces/face-2/PKGBUILD \
+            packages/faces/face-3/PKGBUILD \
+            packages/faces/face-4/PKGBUILD \
+            packages/faces/face-5/PKGBUILD \
+            CONTRIBUTING.md \
+            CODE_OF_CONDUCT.md \
             assets/logo.svg \
             README.md \
             LICENSE; do
@@ -133,11 +146,16 @@ jobs:
             pacman -Syu --noconfirm && \
             pacman -S --noconfirm archiso squashfs-tools && \
             cd /rubik-os && \
+            # Sync all scripts from scripts/ to airootfs
             cp scripts/rubik-orchestrator iso/airootfs/usr/bin/rubikd && \
             cp scripts/rubik-orchestrator iso/airootfs/usr/bin/rubikctl && \
             cp scripts/rubik-install iso/airootfs/usr/bin/rubik-install && \
             cp scripts/rubik-init iso/airootfs/usr/bin/rubik-init && \
             cp scripts/rubik-boot iso/airootfs/usr/bin/rubik-boot && \
+            cp scripts/rubik-bench iso/airootfs/usr/bin/rubik-bench && \
+            cp scripts/rubik-configure iso/airootfs/usr/bin/rubik-configure && \
+            cp scripts/rubik-network iso/airootfs/usr/bin/rubik-network && \
+            cp scripts/rubik-recovery iso/airootfs/usr/bin/rubik-recovery && \
             mkarchiso -v -w /tmp/work -o /rubik-os/out iso/
           "
 
