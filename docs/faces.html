@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faces (F0-F5) — Rubik OS</title>
+  <meta name="description" content="Rubik OS faces: Kernel & Memory, Processes & Services, Storage, Network, UI, Security — 58 atomic cells.">
+  <style>
+    :root { --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff; --border: #30363d; --green: #3fb950; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+    header { text-align: center; padding: 2rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; position: relative; }
+    header h1 { font-size: 2rem; color: #fff; }
+    .lang-btn { position: absolute; top: 1rem; right: 1rem; background: #21262d; border: 1px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+    .lang-btn:hover { background: #30363d; }
+    h2 { font-size: 1.5rem; color: #fff; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.2rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
+    .card { background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
+    .card.face-f0 { border-left: 4px solid #58a6ff; }
+    .card.face-f1 { border-left: 4px solid #3fb950; }
+    .card.face-f2 { border-left: 4px solid #d29922; }
+    .card.face-f3 { border-left: 4px solid #f85149; }
+    .card.face-f4 { border-left: 4px solid #c9d1d9; }
+    .card.face-f5 { border-left: 4px solid #8b949e; }
+    code { background: #21262d; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; color: var(--accent); }
+    .es { display: none; }
+    .nav-bar { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
+    .nav-bar a { color: #8b949e; text-decoration: none; font-size: 0.9rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
+    .nav-bar a:hover { color: var(--accent); background: #21262d; }
+    footer { text-align: center; padding: 2rem 0; margin-top: 2rem; border-top: 1px solid var(--border); color: #8b949e; font-size: 0.85rem; }
+    footer a { color: var(--accent); text-decoration: none; }
+    .social { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .social a { color: #8b949e; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+    .social a:hover { color: var(--accent); }
+    .social svg { width: 20px; height: 20px; fill: currentColor; }
+    .cell-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .cell-item { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; }
+    .cell-item strong { color: #fff; display: block; }
+    .cell-item .desc { color: #8b949e; font-size: 0.85rem; margin-top: 0.25rem; }
+    @media (max-width: 600px) { .container { padding: 1rem; } .lang-btn { position: static; margin-top: 1rem; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <button class="lang-btn" onclick="toggleLang()" id="langBtn">Español</button>
+      <h1><span class="en">Faces (F0-F5)</span><span class="es">Caras (F0-F5)</span></h1>
+      <p class="en">The 58 atomic cells that make up Rubik OS</p>
+      <p class="es">Las 58 celdas atómicas que componen Rubik OS</p>
+    </header>
+
+    <nav class="nav-bar">
+      <a href="/rubik-os/" class="en">Home</a><a href="/rubik-os/" class="es">Inicio</a>
+      <a href="/rubik-os/docs/architecture.html" class="en">Architecture</a><a href="/rubik-os/docs/architecture.html" class="es">Arquitectura</a>
+      <a href="/rubik-os/docs/faces.html" class="en">Faces (F0-F5)</a><a href="/rubik-os/docs/faces.html" class="es">Caras</a>
+      <a href="/rubik-os/docs/packages.html" class="en">Packages</a><a href="/rubik-os/docs/packages.html" class="es">Paquetes</a>
+    </nav>
+
+    <!-- F0 -->
+    <div class="card face-f0">
+      <h3>F0 — <span class="en">Kernel & Memory</span><span class="es">Kernel y Memoria</span></h3>
+      <p style="color:#8b949e;font-size:0.85rem" class="en">Memory compression, swap management, OOM prevention, CPU governors, memory forecasting.</p>
+      <p style="color:#8b949e;font-size:0.85rem" class="es">Compresión de memoria, gestión de swap, prevención de OOM, gobernadores de CPU, predicción de memoria.</p>
+      <div class="cell-grid">
+        <div class="cell-item"><strong>Kernel-lts</strong><div class="desc en">Linux LTS with Rubik patches</div><div class="desc es">Linux LTS con parches Rubik</div></div>
+        <div class="cell-item"><strong>Memory-compression</strong><div class="desc en">Dynamic ZRAM + zswap</div><div class="desc es">ZRAM + zswap dinámico</div></div>
+        <div class="cell-item"><strong>Swap-manager</strong><div class="desc en">Smart swap with page prioritization</div><div class="desc es">Swap inteligente con priorización</div></div>
+        <div class="cell-item"><strong>OOM-guard</strong><div class="desc en">EarlyOOM + notifications</div><div class="desc es">EarlyOOM + notificaciones</div></div>
+        <div class="cell-item"><strong>Hugepages</strong><div class="desc en">Dynamic transparent hugepages</div><div class="desc es">Hugepages transparentes dinámicas</div></div>
+        <div class="cell-item"><strong>Cache-tune</strong><div class="desc en">Auto vfs_cache_pressure, dirty_ratio</div><div class="desc es">Ajuste automático de caché</div></div>
+        <div class="cell-item"><strong>IRQ-balance</strong><div class="desc en">Interrupt balancing across cores</div><div class="desc es">Balanceo de IRQ entre cores</div></div>
+        <div class="cell-item"><strong>CPU-gov</strong><div class="desc en">Adaptive CPU governor (conservative + schedutil)</div><div class="desc es">Gobernador adaptativo</div></div>
+        <div class="cell-item"><strong>Mem-forecast</strong><div class="desc en">Light ML-based memory usage predictor</div><div class="desc es">Predictor de memoria (ML ligero)</div></div>
+      </div>
+    </div>
+
+    <!-- F1 -->
+    <div class="card face-f1">
+      <h3>F1 — <span class="en">Processes & Services</span><span class="es">Procesos y Servicios</span></h3>
+      <p style="color:#8b949e;font-size:0.85rem" class="en">Orchestrator, cgroup management, scheduler tuning, service monitoring, power management.</p>
+      <p style="color:#8b949e;font-size:0.85rem" class="es">Orquestador, gestión de cgroups, ajuste de scheduler, monitoreo de servicios, gestión de energía.</p>
+      <div class="cell-grid">
+        <div class="cell-item"><strong>Rubikd-orchestrator</strong><div class="desc en">Central cell orchestrator</div><div class="desc es">Orquestador central de celdas</div></div>
+        <div class="cell-item"><strong>Systemd-minimal</strong><div class="desc en">Systemd essentials only</div><div class="desc es">Systemd solo lo esencial</div></div>
+        <div class="cell-item"><strong>Cgroup-manager</strong><div class="desc en">cgroups v2 isolation</div><div class="desc es">Aislamiento cgroups v2</div></div>
+        <div class="cell-item"><strong>Sched-tune</strong><div class="desc en">CPU priority & affinity tuning</div><div class="desc es">Ajuste de prioridades y afinidad CPU</div></div>
+        <div class="cell-item"><strong>Service-watcher</strong><div class="desc en">Auto-restart service monitor</div><div class="desc es">Monitor de servicios con auto-reinicio</div></div>
+        <div class="cell-item"><strong>Log-forwarder</strong><div class="desc en">Minimal journald forwarding</div><div class="desc es">Forwarder de logs a journald</div></div>
+        <div class="cell-item"><strong>Initramfs</strong><div class="desc en">Minimal parallel boot initramfs</div><div class="desc es">Initramfs mínimo con arranque paralelo</div></div>
+        <div class="cell-item"><strong>Power-manager</strong><div class="desc en">Sleep states & frequency management</div><div class="desc es">Gestión de sueño y frecuencia</div></div>
+      </div>
+    </div>
+
+    <!-- F2 -->
+    <div class="card face-f2">
+      <h3>F2 — <span class="en">Storage</span><span class="es">Almacenamiento</span></h3>
+      <p style="color:#8b949e;font-size:0.85rem" class="en">Filesystem layout, I/O caching, deduplication, snapshots, SSD TRIM scheduling.</p>
+      <p style="color:#8b949e;font-size:0.85rem" class="es">Estructura de directorios, caché de E/S, deduplicación, snapshots, TRIM programado.</p>
+      <div class="cell-grid">
+        <div class="cell-item"><strong>Fs-layout</strong><div class="desc en">Rubik directory structure</div><div class="desc es">Estructura de directorios Rubik</div></div>
+        <div class="cell-item"><strong>Cache-io</strong><div class="desc en">Smart I/O cache (bcache/lvmcache)</div><div class="desc es">Caché de E/S inteligente</div></div>
+        <div class="cell-item"><strong>Tmpfs-manager</strong><div class="desc en">/tmp, /var/tmp on tmpfs with limits</div><div class="desc es">/tmp, /var/tmp en tmpfs con límites</div></div>
+        <div class="cell-item"><strong>Trim-scheduler</strong><div class="desc en">Scheduled SSD TRIM</div><div class="desc es">TRIM programado para SSDs</div></div>
+        <div class="cell-item"><strong>Dedup</strong><div class="desc en">Block-level deduplication (vdo)</div><div class="desc es">Deduplicación a nivel bloques</div></div>
+        <div class="cell-item"><strong>Fs-notify</strong><div class="desc en">fanotify filesystem events</div><div class="desc es">Notificaciones de cambios en filesystem</div></div>
+        <div class="cell-item"><strong>Snapper</strong><div class="desc en">Recovery snapshots (btrfs/zfs)</div><div class="desc es">Snapshots de recuperación</div></div>
+        <div class="cell-item"><strong>Defrag-lite</strong><div class="desc en">Light background defragmentation</div><div class="desc es">Desfragmentación ligera en segundo plano</div></div>
+      </div>
+    </div>
+
+    <!-- F3 -->
+    <div class="card face-f3">
+      <h3>F3 — <span class="en">Network & Communication</span><span class="es">Red y Comunicación</span></h3>
+      <p style="color:#8b949e;font-size:0.85rem" class="en">Minimal networking, firewall, DNS cache, VPN/proxy, WiFi, bandwidth limiting, NTP sync.</p>
+      <p style="color:#8b949e;font-size:0.85rem" class="es">Red minimal, firewall, caché DNS, VPN/proxy, WiFi, límite de ancho de banda, sincronización NTP.</p>
+      <div class="cell-grid">
+        <div class="cell-item"><strong>Networkd</strong><div class="desc en">Minimal systemd-networkd</div><div class="desc es">systemd-networkd minimal</div></div>
+        <div class="cell-item"><strong>Firewall</strong><div class="desc en">nftables with predefined rules</div><div class="desc es">nftables con reglas predefinidas</div></div>
+        <div class="cell-item"><strong>Dns-cache</strong><div class="desc en">Local DNS resolver (systemd-resolved)</div><div class="desc es">Resolver DNS local</div></div>
+        <div class="cell-item"><strong>Proxy-tun</strong><div class="desc en">Auto VPN/proxy tunnel when needed</div><div class="desc es">Túnel VPN/Proxy automático</div></div>
+        <div class="cell-item"><strong>Net-monitor</strong><div class="desc en">Traffic & connection monitor</div><div class="desc es">Monitor de tráfico y conexiones</div></div>
+        <div class="cell-item"><strong>Wifi-manager</strong><div class="desc en">iwd (minimal, no NetworkManager)</div><div class="desc es">iwd minimal, sin NetworkManager</div></div>
+        <div class="cell-item"><strong>Bandwidth-limiter</strong><div class="desc en">Per-process bandwidth limit</div><div class="desc es">Límite de ancho de banda por proceso</div></div>
+        <div class="cell-item"><strong>Ntp-sync</strong><div class="desc en">chrony time synchronization</div><div class="desc es">Sincronización de tiempo (chrony)</div></div>
+      </div>
+    </div>
+
+    <!-- F4 -->
+    <div class="card face-f4">
+      <h3>F4 — <span class="en">Interface & Experience</span><span class="es">Interfaz y Experiencia</span></h3>
+      <p style="color:#8b949e;font-size:0.85rem" class="en">Window manager, status bar, app launcher, terminal, notifications, clipboard, wallpaper.</p>
+      <p style="color:#8b949e;font-size:0.85rem" class="es">Window manager, barra de estado, lanzador, terminal, notificaciones, portapapeles, wallpaper.</p>
+      <div class="cell-grid">
+        <div class="cell-item"><strong>Wm-core</strong><div class="desc en">River (Wayland compositor)</div><div class="desc es">River (compositor Wayland)</div></div>
+        <div class="cell-item"><strong>Bar-status</strong><div class="desc en">waybar status bar</div><div class="desc es">Barra de estado waybar</div></div>
+        <div class="cell-item"><strong>Launcher</strong><div class="desc en">rofi/fuzzel app launcher</div><div class="desc es">Lanzador rofi/fuzzel</div></div>
+        <div class="cell-item"><strong>Terminal</strong><div class="desc en">foot terminal emulator</div><div class="desc es">Emulador de terminal foot</div></div>
+        <div class="cell-item"><strong>Notifier</strong><div class="desc en">mako/dunst notifications</div><div class="desc es">Notificaciones mako/dunst</div></div>
+        <div class="cell-item"><strong>Wallpaper</strong><div class="desc en">swaybg wallpaper manager</div><div class="desc es">Gestor de wallpaper swaybg</div></div>
+        <div class="cell-item"><strong>Clipboard</strong><div class="desc en">wl-clipboard</div><div class="desc es">Portapapeles wl-clipboard</div></div>
+        <div class="cell-item"><strong>Idle-manager</strong><div class="desc en">swaylock idle/lockscreen</div><div class="desc es">Bloqueo de pantalla swaylock</div></div>
+      </div>
+    </div>
+
+    <!-- F5 -->
+    <div class="card face-f5">
+      <h3>F5 — <span class="en">Security & Isolation</span><span class="es">Seguridad y Aislamiento</span></h3>
+      <p style="color:#8b949e;font-size:0.85rem" class="en">AppArmor profiles, sandbox execution, auditing, LUKS encryption, integrity verification, firejail.</p>
+      <p style="color:#8b949e;font-size:0.85rem" class="es">Perfiles AppArmor, ejecución en sandbox, auditoría, cifrado LUKS, verificación de integridad, firejail.</p>
+      <div class="cell-grid">
+        <div class="cell-item"><strong>Apparmor</strong><div class="desc en">AppArmor profiles for all cells</div><div class="desc es">Perfiles AppArmor para todas las celdas</div></div>
+        <div class="cell-item"><strong>Sandbox-exec</strong><div class="desc en">bubblewrap sandboxed execution</div><div class="desc es">Ejecución en sandbox (bubblewrap)</div></div>
+        <div class="cell-item"><strong>Audit</strong><div class="desc en">System event auditing</div><div class="desc es">Auditoría de eventos del sistema</div></div>
+        <div class="cell-item"><strong>Crypto</strong><div class="desc en">LUKS encryption + key management</div><div class="desc es">Cifrado LUKS + gestión de claves</div></div>
+        <div class="cell-item"><strong>Integrity</strong><div class="desc en">Package integrity verification</div><div class="desc es">Verificación de integridad de paquetes</div></div>
+        <div class="cell-item"><strong>Firejail</strong><div class="desc en">Additional app isolation sandbox</div><div class="desc es">Aislamiento adicional de aplicaciones</div></div>
+        <div class="cell-item"><strong>Update-auth</strong><div class="desc en">Signed update authentication</div><div class="desc es">Autenticación de actualizaciones firmadas</div></div>
+        <div class="cell-item"><strong>Cell-isolation</strong><div class="desc en">namespace-based cell isolation</div><div class="desc es">Aislamiento entre celdas via namespaces</div></div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="social">
+        <a href="https://github.com/erac73" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="https://x.com/erac73" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @erac73
+        </a>
+      </div>
+      <p style="margin-top:1rem"><a href="https://github.com/erac73/rubik-os">GitHub</a> &middot; <a href="https://github.com/erac73/rubik-os/blob/main/LICENSE">GPLv3</a></p>
+    </footer>
+
+  </div>
+
+  <script>
+    let lang = 'en';
+    function toggleLang() {
+      lang = lang === 'en' ? 'es' : 'en';
+      document.documentElement.lang = lang;
+      document.getElementById('langBtn').textContent = lang === 'en' ? 'Español' : 'English';
+      for (const el of document.querySelectorAll('.en, .es')) {
+        el.style.display = el.classList.contains(lang) ? '' : 'none';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Packages — Rubik OS</title>
+  <meta name="description" content="Rubik OS package repository and build instructions.">
+  <style>
+    :root { --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff; --border: #30363d; --green: #3fb950; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+    header { text-align: center; padding: 2rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; position: relative; }
+    header h1 { font-size: 2rem; color: #fff; }
+    .lang-btn { position: absolute; top: 1rem; right: 1rem; background: #21262d; border: 1px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+    .lang-btn:hover { background: #30363d; }
+    h2 { font-size: 1.5rem; color: #fff; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.2rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
+    .card { background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
+    code { background: #21262d; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; color: var(--accent); }
+    pre { background: #21262d; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 0.5rem 0; }
+    pre code { background: none; padding: 0; }
+    ul { padding-left: 1.5rem; }
+    li { margin: 0.5rem 0; }
+    .es { display: none; }
+    .nav-bar { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
+    .nav-bar a { color: #8b949e; text-decoration: none; font-size: 0.9rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
+    .nav-bar a:hover { color: var(--accent); background: #21262d; }
+    footer { text-align: center; padding: 2rem 0; margin-top: 2rem; border-top: 1px solid var(--border); color: #8b949e; font-size: 0.85rem; }
+    footer a { color: var(--accent); text-decoration: none; }
+    .social { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .social a { color: #8b949e; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+    .social a:hover { color: var(--accent); }
+    .social svg { width: 20px; height: 20px; fill: currentColor; }
+    .pkg-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .pkg-item { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
+    .pkg-item h4 { color: var(--accent); }
+    .pkg-item p { color: #8b949e; font-size: 0.85rem; margin-top: 0.25rem; }
+    @media (max-width: 600px) { .container { padding: 1rem; } .lang-btn { position: static; margin-top: 1rem; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <button class="lang-btn" onclick="toggleLang()" id="langBtn">Español</button>
+      <h1><span class="en">Package Repository</span><span class="es">Repositorio de Paquetes</span></h1>
+      <p class="en">Install Rubik OS packages on any Arch-based system</p>
+      <p class="es">Instalá paquetes de Rubik OS en cualquier sistema basado en Arch</p>
+    </header>
+
+    <nav class="nav-bar">
+      <a href="/rubik-os/" class="en">Home</a><a href="/rubik-os/" class="es">Inicio</a>
+      <a href="/rubik-os/docs/architecture.html" class="en">Architecture</a><a href="/rubik-os/docs/architecture.html" class="es">Arquitectura</a>
+      <a href="/rubik-os/docs/faces.html" class="en">Faces (F0-F5)</a><a href="/rubik-os/docs/faces.html" class="es">Caras</a>
+      <a href="/rubik-os/docs/packages.html" class="en">Packages</a><a href="/rubik-os/docs/packages.html" class="es">Paquetes</a>
+    </nav>
+
+    <section>
+      <h2 class="en">Quick Setup</h2>
+      <h2 class="es">Configuración Rápida</h2>
+      <div class="card">
+        <p class="en">Add the official Rubik OS repository to your <code>/etc/pacman.conf</code>:</p>
+        <p class="es">Agregá el repositorio oficial de Rubik OS a tu <code>/etc/pacman.conf</code>:</p>
+        <pre><code>[rubik]
+Server = https://erac73.github.io/rubik-os/repo/$arch</code></pre>
+        <p class="en" style="margin-top:0.5rem">Then update and install:</p>
+        <p class="es" style="margin-top:0.5rem">Luego actualizá e instalá:</p>
+        <pre><code>pacman -Sy rubik-core</code></pre>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="en">Available Packages</h2>
+      <h2 class="es">Paquetes Disponibles</h2>
+      <div class="pkg-list">
+        <div class="pkg-item">
+          <h4>rubik-core</h4>
+          <p class="en">Rubik OS base system: orchestrator (rubikd, rubikctl), cell scripts, systemd units, AppArmor profiles, rubik-install, rubik-configure, rubik-boot, rubik-bench, rubik-recovery, rubik-network.</p>
+          <p class="es">Sistema base de Rubik OS: orquestador (rubikd, rubikctl), scripts de celdas, units systemd, perfiles AppArmor, rubik-install, rubik-configure, rubik-boot, rubik-bench, rubik-recovery, rubik-network.</p>
+        </div>
+        <div class="pkg-item">
+          <h4>rubik-face-0</h4>
+          <p class="en">Kernel & Memory cells: memory-compression, swap-manager, OOM-guard, hugepages, cache-tune, CPU-gov, mem-forecast, zram-udev.</p>
+          <p class="es">Celdas de Kernel y Memoria: memory-compression, swap-manager, OOM-guard, hugepages, cache-tune, CPU-gov, mem-forecast, zram-udev.</p>
+        </div>
+        <div class="pkg-item">
+          <h4>rubik-face-1</h4>
+          <p class="en">Processes & Services cells: cgroup-manager, sched-tune, initramfs.</p>
+          <p class="es">Celdas de Procesos y Servicios: cgroup-manager, sched-tune, initramfs.</p>
+        </div>
+        <div class="pkg-item">
+          <h4>rubik-face-2</h4>
+          <p class="en">Storage cells: cache-io, dedup, fs-layout.</p>
+          <p class="es">Celdas de Almacenamiento: cache-io, dedup, fs-layout.</p>
+        </div>
+        <div class="pkg-item">
+          <h4>rubik-face-3</h4>
+          <p class="en">Network cells: bandwidth-limiter, bluetooth, net-monitor, proxy-tun, wifi-manager.</p>
+          <p class="es">Celdas de Red: bandwidth-limiter, bluetooth, net-monitor, proxy-tun, wifi-manager.</p>
+        </div>
+        <div class="pkg-item">
+          <h4>rubik-face-4</h4>
+          <p class="en">Interface cells: bar-status, clipboard, compositor, display-manager, idle-manager, launcher, notifier, pipewire, terminal, wallpaper, wm-core.</p>
+          <p class="es">Celdas de Interfaz: bar-status, clipboard, compositor, display-manager, idle-manager, launcher, notifier, pipewire, terminal, wallpaper, wm-core.</p>
+        </div>
+        <div class="pkg-item">
+          <h4>rubik-face-5</h4>
+          <p class="en">Security cells: cell-isolation, crypto, firejail, integrity, sandbox-exec, update-auth.</p>
+          <p class="es">Celdas de Seguridad: cell-isolation, crypto, firejail, integrity, sandbox-exec, update-auth.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="en">Build from Source</h2>
+      <h2 class="es">Construir desde Fuente</h2>
+      <div class="card">
+        <p class="en">Clone the repository and build the ISO using Docker:</p>
+        <p class="es">Cloná el repositorio y construí la ISO usando Docker:</p>
+        <pre><code>git clone https://github.com/erac73/rubik-os.git
+cd rubik-os
+./scripts/docker-build.sh</code></pre>
+        <p class="en" style="margin-top:0.5rem;color:#8b949e">The script builds the full ISO inside a Docker container using archiso.</p>
+        <p class="es" style="margin-top:0.5rem;color:#8b949e">El script construye la ISO completa dentro de un contenedor Docker usando archiso.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="en">Build Packages Individually</h2>
+      <h2 class="es">Construir Paquetes Individualmente</h2>
+      <div class="card">
+        <p class="en">Each package can be built with makepkg:</p>
+        <p class="es">Cada paquete puede construirse con makepkg:</p>
+        <pre><code><span class="en"># Build rubik-core</span><span class="es"># Construir rubik-core</span>
+cd packages/core/rubik-core
+makepkg -si
+
+<span class="en"># Build a face package</span><span class="es"># Construir un paquete de cara</span>
+cd packages/faces/face-0
+makepkg -si</code></pre>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="en">Repository Structure</h2>
+      <h2 class="es">Estructura del Repositorio</h2>
+      <div class="card">
+        <pre><code>rubik-os/
+  packages/
+    core/rubik-core/     <span class="en"># Rubik OS base package</span><span class="es"># Paquete base de Rubik OS</span>
+    faces/
+      face-0/            <span class="en"># Kernel & Memory</span><span class="es"># Kernel y Memoria</span>
+      face-1/            <span class="en"># Processes & Services</span><span class="es"># Procesos y Servicios</span>
+      face-2/            <span class="en"># Storage</span><span class="es"># Almacenamiento</span>
+      face-3/            <span class="en"># Network & Communication</span><span class="es"># Red y Comunicación</span>
+      face-4/            <span class="en"># Interface & Experience</span><span class="es"># Interfaz y Experiencia</span>
+      face-5/            <span class="en"># Security & Isolation</span><span class="es"># Seguridad y Aislamiento</span>
+  docs/
+    repo/x86_64/         <span class="en"># Package repository database</span><span class="es"># Base de datos del repositorio</span></code></pre>
+      </div>
+    </section>
+
+    <footer>
+      <div class="social">
+        <a href="https://github.com/erac73" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="https://x.com/erac73" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @erac73
+        </a>
+      </div>
+      <p style="margin-top:1rem"><a href="https://github.com/erac73/rubik-os">GitHub</a> &middot; <a href="https://github.com/erac73/rubik-os/blob/main/LICENSE">GPLv3</a></p>
+    </footer>
+
+  </div>
+
+  <script>
+    let lang = 'en';
+    function toggleLang() {
+      lang = lang === 'en' ? 'es' : 'en';
+      document.documentElement.lang = lang;
+      document.getElementById('langBtn').textContent = lang === 'en' ? 'Español' : 'English';
+      for (const el of document.querySelectorAll('.en, .es')) {
+        el.style.display = el.classList.contains(lang) ? '' : 'none';
+      }
+    }
+  </script>
+</body>
+</html>
